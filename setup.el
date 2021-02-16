@@ -21,13 +21,13 @@
 
 ;;     (setup shell
 ;;       (let ((key "C-c s"))
-;;         (global key shell)
-;;         (bind key bury-buffer)))
+;;         (:global key shell)
+;;         (:bind key bury-buffer)))
 ;;
 ;;
 ;;     (setup (:package paredit)
-;;       (hide-mode)
-;;       (hook-into scheme-mode lisp-mode))
+;;       (:hide-mode)
+;;       (:hook-into scheme-mode lisp-mode))
 
 ;; will be replaced with the functional equivalent of
 
@@ -153,7 +153,7 @@ A documentation string."
 
 ;;; definitions of `setup' keywords
 
-(setup-define 'with-mode
+(setup-define :with-mode
   (lambda (mode &rest body)
     `(let ((setup-mode ',mode)
            (setup-map ',(intern (format "%s-map" mode)))
@@ -164,7 +164,7 @@ A documentation string."
   :documentation "Change the MODE that BODY is configuring."
   :indent 1)
 
-(setup-define 'with-map
+(setup-define ;with-map
   (lambda (map &rest body)
     `(let ((setup-map ',map))
        ,@body))
@@ -172,7 +172,7 @@ A documentation string."
   :documentation "Change the MAP that BODY will bind to"
   :indent 1)
 
-(setup-define 'with-hook
+(setup-define :with-hook
   (lambda (hook &rest body)
     `(let ((setup-hook ',hook))
        ,@body))
@@ -180,7 +180,7 @@ A documentation string."
   :documentation "Change the HOOK that BODY will use."
   :indent 1)
 
-(setup-define 'package
+(setup-define :package
   (lambda (package)
     `(unless (package-installed-p ',package)
        (package-install ',package)))
@@ -189,7 +189,7 @@ A documentation string."
   :shorthand #'cadr
   :repeatable t)
 
-(setup-define 'require
+(setup-define :require
   (lambda (feature)
     `(require ',feature))
   :signature '(FEATURE ...)
@@ -197,7 +197,7 @@ A documentation string."
   :shorthand #'cadr
   :repeatable t)
 
-(setup-define 'global
+(setup-define :global
   (lambda (key fn)
     `(global-set-key
       ,(cond ((stringp key) (kbd key))
@@ -208,7 +208,7 @@ A documentation string."
   :documentation "Globally bind KEY to FUNCTION."
   :repeatable t)
 
-(setup-define 'bind
+(setup-define :bind
   (lambda (key fn)
     `(define-key (eval setup-map)
        ,(cond ((stringp key) (kbd key))
@@ -220,7 +220,7 @@ A documentation string."
   :after-loaded t
   :repeatable t)
 
-(setup-define 'unbind
+(setup-define :unbind
   (lambda (key)
     `(define-key
        ,(cond ((stringp key) (kbd key))
@@ -232,7 +232,7 @@ A documentation string."
   :after-loaded t
   :repeatable t)
 
-(setup-define 'rebind
+(setup-define :rebind
   (lambda (key fn)
     `(progn
        (dolist (key (where-is-internal ',fn))
@@ -247,14 +247,14 @@ A documentation string."
   :after-loaded t
   :repeatable t)
 
-(setup-define 'hook
+(setup-define :hook
   (lambda (hook)
     `(add-hook setup-hook #',hook))
   :signature '(FUNCTION ...)
   :documentation "Add FUNCTION to current hook."
   :repeatable t)
 
-(setup-define 'hook-into
+(setup-define :hook-into
   (lambda (mode)
     `(add-hook ',(intern (concat (symbol-name mode) "-hook"))
                setup-mode))
@@ -262,7 +262,7 @@ A documentation string."
   :documentation "Add current mode to HOOK."
   :repeatable t)
 
-(setup-define 'option
+(setup-define :option
   (lambda (var val)
     (cond ((symbolp var)
            `(customize-set-variable ',var ,val "Modified by `setup'"))
@@ -287,21 +287,21 @@ will use the car value to modify the behaviour.  If NAME has the
 form (append VAR), "
   :repeatable t)
 
-(setup-define 'hide-mode
+(setup-define :hide-mode
   (lambda ()
     `(delq (assq setup-mode minor-mode-alist)
            minor-mode-alist))
   :documentation "Hide the mode-line lighter of the current mode."
   :after-loaded t)
 
-(setup-define 'local-set
+(setup-define :local-set
   (lambda (var val)
     `(add-hook setup-hook (lambda () (setq-local ,var ,val))))
   :signature '(VAR VAL ...)
   :documentation "Set the value of VAR to VAL in buffers of the current mode."
   :repeatable t)
 
-(setup-define 'local-hook
+(setup-define :local-hook
   (lambda (hook fn)
     `(add-hook setup-hook
                (lambda ()
@@ -310,7 +310,7 @@ form (append VAR), "
   :documentation "Add FUNCTION to HOOK only in buffers of the current mode."
   :repeatable t)
 
-(setup-define 'needs
+(setup-define :needs
   (lambda (binary)
     `(unless (executable-find ,binary)
        (throw 'setup-exit nil)))
@@ -318,7 +318,7 @@ form (append VAR), "
   :documentation "If PROGRAM is not in the path, stop here."
   :repeatable t)
 
-(setup-define 'when-loaded
+(setup-define :when-loaded
   (lambda (&rest body) `(progn ,@body))
   :signature '(&body BODY)
   :documentation "Evaluate BODY after the current feature has been loaded."
