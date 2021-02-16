@@ -83,8 +83,7 @@
       (let ((sig (if (get sym 'setup-signature)
                      (cons sym (get sym 'setup-signature))
                    (list sym))))
-        (insert "- " (prin1-to-string sig)
-                "\n\n"
+        (insert (format " - %s\n\n" sig)
                 (or (get sym 'setup-documentation)
                     "No documentation.")
                 "\n\n")))
