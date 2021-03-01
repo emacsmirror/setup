@@ -228,9 +228,9 @@ A documentation string."
 (setup-define :bind
   (lambda (key fn)
     `(define-key (eval setup-map)
-       ,(cond ((stringp key) (kbd key))
-              ((symbolp key) `(kbd ,key))
-              (key))
+       ,(if (or (symbolp key) (stringp key))
+            `(kbd ,key)
+          ,key)
        #',fn))
   :signature '(KEY FUNCTION ...)
   :documentation "Bind KEY to FUNCTION in current map."
@@ -239,10 +239,10 @@ A documentation string."
 
 (setup-define :unbind
   (lambda (key)
-    `(define-key
-       ,(cond ((stringp key) (kbd key))
-              ((symbolp key) `(kbd ,key))
-              (key))
+    `(define-key (symbol-value setup-map)
+       ,(if (or (symbolp key) (stringp key))
+              `(kbd ,key)
+          ,key)
        nil))
   :signature '(KEY ...)
   :documentation "Unbind KEY in current map."
@@ -252,12 +252,12 @@ A documentation string."
 (setup-define :rebind
   (lambda (key fn)
     `(progn
-       (dolist (key (where-is-internal ',fn))
-         (define-key (eval setup-map) ,key nil))
-       (define-key
-         ,(cond ((stringp key) (kbd key))
-                ((symbolp key) `(kbd ,key))
-                (key))
+       (dolist (key (where-is-internal ',fn (eval setup-map)))
+         (define-key (eval setup-map) key nil))
+       (define-key (eval setup-map)
+         ,(if (or (symbolp key) (stringp key))
+              `(kbd ,key)
+            ,key)
          #',fn)))
   :signature '(KEY FUNCTION ...)
   :documentation "Unbind the current key for FUNCTION, and bind it to KEY."
