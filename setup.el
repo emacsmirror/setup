@@ -335,6 +335,14 @@ form (append VAR), "
   :documentation "If PROGRAM is not in the path, stop here."
   :repeatable t)
 
+(setup-define :if
+  (lambda (condition)
+    `(unless ,condition
+       (throw 'setup-exit nil)))
+  :signature '(CONDITION ...)
+  :documentation "If CONDITION is non-nil, stop evaluating the body."
+  :repeatable t)
+
 (setup-define :when-loaded
   (lambda (&rest body) `(progn ,@body))
   :signature '(&body BODY)
