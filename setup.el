@@ -181,7 +181,7 @@ A documentation string."
   :documentation "Change the MODE that BODY is configuring."
   :indent 1)
 
-(setup-define ;with-map
+(setup-define :with-map
   (lambda (map &rest body)
     `(let ((setup-map ',map))
        ,@body))
