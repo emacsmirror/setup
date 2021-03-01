@@ -102,14 +102,10 @@ The following local macros are defined in a `setup' body:\n\n"
       (when shorthand
         (push name body)
         (setq name (funcall shorthand name)))))
-  (let ((mode (if (string-match-p "-mode\\'" (symbol-name name))
-                  name
-                (intern (format "%s-mode" name)))))
-    `(let ((setup-name ',name))
-       (ignore setup-name)
-       (cl-macrolet ,setup-macros
-         (catch 'setup-exit
-           (:with-mode ,mode ,@body))))))
+  `(cl-macrolet ,setup-macros
+     (catch 'setup-exit
+       (:with-feature ,name ,@body)
+       t)))
 
 ;;;###autoload
 (put 'setup 'function-documentation '(setup-make-docstring))
@@ -169,6 +165,18 @@ A documentation string."
 
 
 ;;; definitions of `setup' keywords
+
+(setup-define :with-feature
+  (lambda (name &rest body)
+    `(let ((setup-name ',name))
+       (ignore setup-name)
+       (:with-mode ,(if (string-match-p "-mode\\'" (symbol-name name))
+                        name
+                      (intern (format "%s-mode" name)))
+         ,@body)))
+  :signature '(SYSTEM &body BODY)
+  :documentation "Change the SYSTEM that BODY is configuring."
+  :indent 1)
 
 (setup-define :with-mode
   (lambda (mode &rest body)
