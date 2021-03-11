@@ -97,7 +97,7 @@ BODY may contain special forms defined by `setup-define', but
 will otherwise just be evaluated as is.
 
 The following local macros are defined in a `setup' body:\n\n"
-  (declare (debug (name &rest body)))
+  (declare (debug (sexp body)) (indent defun))
   (when (consp name)
     (let ((shorthand (get (car name) 'setup-shorthand)))
       (when shorthand
@@ -132,7 +132,12 @@ Allow macro to be automatically repeated, using FN's arity.
 Give an advertised calling convention.
 
   :documentation
-A documentation string."
+A documentation string.
+
+  :debug
+A edebug specification, see `(elisp) Specification List'.  If not
+given, it is assumed nothing is evaluated.  If macro is
+:repeatable, a &rest will be added before the specification."
   (declare (indent 1))
   (cl-assert (symbolp name))
   (cl-assert (functionp fn))
@@ -143,6 +148,8 @@ A documentation string."
   (put name 'setup-shorthand (plist-get opts :shorthand))
   (put name 'lisp-indent-function (plist-get opts :indent))
   (put name 'setup-indent (plist-get opts :indent))
+  (put name 'setup-repeatable (plist-get opts :repeatable))
+  (put name 'setup-debug (plist-get opts :debug))
   ;; forget previous definition
   (setq setup-macros (delq (assq name setup-macros)
                            setup-macros))
@@ -165,7 +172,17 @@ A documentation string."
                       `(with-eval-after-load setup-name ,,body))
             `(,name (&rest args) `,,body)))
         setup-macros)
-  (set-advertised-calling-convention name (plist-get opts :signature) nil))
+  (put 'setup 'edebug-form-spec
+       (let (specs)
+         (dolist (name (mapcar #'car setup-macros))
+           (let ((body (cond ((eq (get name 'setup-debug) 'none) nil)
+                             ((get name 'setup-debug) nil)
+                             ('(sexp)))))
+             (push (if (get name 'setup-repeatable)
+                       `(,(symbol-name name) &rest ,@body)
+                     `(,(symbol-name name) ,@body))
+                   specs)))
+         `(&rest &or [symbolp sexp] ,@specs form))))
 
 
 ;;; definitions of `setup' keywords
@@ -180,6 +197,7 @@ A documentation string."
          ,@body)))
   :signature '(SYSTEM &body BODY)
   :documentation "Change the SYSTEM that BODY is configuring."
+  :debug '(sexp setup)
   :indent 1)
 
 (setup-define :with-mode
@@ -191,6 +209,7 @@ A documentation string."
        ,@body))
   :signature '(MODE &body BODY)
   :documentation "Change the MODE that BODY is configuring."
+  :debug '(sexp setup)
   :indent 1)
 
 (setup-define :with-map
@@ -199,6 +218,7 @@ A documentation string."
        ,@body))
   :signature '(MAP &body BODY)
   :documentation "Change the MAP that BODY will bind to"
+  :debug '(sexp setup)
   :indent 1)
 
 (setup-define :with-hook
@@ -207,6 +227,7 @@ A documentation string."
        ,@body))
   :signature '(HOOK &body BODY)
   :documentation "Change the HOOK that BODY will use."
+  :debug '(sexp setup)
   :indent 1)
 
 (setup-define :package
@@ -235,6 +256,7 @@ A documentation string."
       #',fn))
   :signature '(KEY FUNCTION ...)
   :documentation "Globally bind KEY to FUNCTION."
+  :debug '(form [&or [symbolp sexp] form])
   :repeatable t)
 
 (setup-define :bind
@@ -247,6 +269,7 @@ A documentation string."
   :signature '(KEY FUNCTION ...)
   :documentation "Bind KEY to FUNCTION in current map."
   :after-loaded t
+  :debug '(form [&or [symbolp sexp] form])
   :repeatable t)
 
 (setup-define :unbind
@@ -259,6 +282,7 @@ A documentation string."
   :signature '(KEY ...)
   :documentation "Unbind KEY in current map."
   :after-loaded t
+  :debug '(form)
   :repeatable t)
 
 (setup-define :rebind
@@ -281,6 +305,7 @@ A documentation string."
     `(add-hook setup-hook #',hook))
   :signature '(FUNCTION ...)
   :documentation "Add FUNCTION to current hook."
+  :debug '(form [&or [symbolp sexp] form])
   :repeatable t)
 
 (setup-define :hook-into
@@ -315,6 +340,7 @@ NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
 will use the car value to modify the behaviour.  If NAME has the
 form (append VAR), VAL is appended to VAR.  If NAME has the
 form (prepend VAR), VAL is prepended to VAR."
+  :debug '(sexp form)
   :repeatable t)
 
 (setup-define :hide-mode
@@ -322,6 +348,7 @@ form (prepend VAR), VAL is prepended to VAR."
     `(delq (assq setup-mode minor-mode-alist)
            minor-mode-alist))
   :documentation "Hide the mode-line lighter of the current mode."
+  :debug 'none
   :after-loaded t)
 
 (setup-define :local-set
@@ -342,6 +369,7 @@ NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
 will use the car value to modify the behaviour.  If NAME has the
 form (append VAR), VAL is appended to VAR.  If NAME has the
 form (prepend VAR), VAL is prepended to VAR."
+  :debug '(sexp form)
   :repeatable t)
 
 (setup-define :local-hook
@@ -351,6 +379,7 @@ form (prepend VAR), VAL is prepended to VAR."
                  (add-hook ',hook #',fn nil t))))
   :signature '(HOOK FUNCTION ...)
   :documentation "Add FUNCTION to HOOK only in buffers of the current mode."
+  :debug '(symbolp form)
   :repeatable t)
 
 (setup-define :also-load
@@ -375,12 +404,14 @@ form (prepend VAR), VAL is prepended to VAR."
        (throw 'setup-exit nil)))
   :signature '(CONDITION ...)
   :documentation "If CONDITION is non-nil, stop evaluating the body."
+  :debug '(form)
   :repeatable t)
 
 (setup-define :when-loaded
   (lambda (&rest body) `(progn ,@body))
   :signature '(&body BODY)
   :documentation "Evaluate BODY after the current feature has been loaded."
+  :debug '(body)
   :after-loaded t)
 
 (provide 'setup)
