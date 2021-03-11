@@ -3,7 +3,7 @@
 ;; Author: Philip K. <philipk@posteo.net>
 ;; Maintainer: Philip K. <philipk@posteo.net>
 ;; Version: 0.1.0
-;; Package-Requires: ((emacs "26.1") (cl-lib "0.6.1"))
+;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: lisp, local
 
 ;; This file is NOT part of Emacs.
