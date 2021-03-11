@@ -135,9 +135,10 @@ Give an advertised calling convention.
 A documentation string.
 
   :debug
-A edebug specification, see `(elisp) Specification List'.  If not
-given, it is assumed nothing is evaluated.  If macro is
-:repeatable, a &rest will be added before the specification."
+A edebug specification, see Info node `(elisp)
+Specification List'.  If not given, it is assumed nothing is
+evaluated.  If macro is :repeatable, a &rest will be added before
+the specification."
   (declare (indent 1))
   (cl-assert (symbolp name))
   (cl-assert (functionp fn))
