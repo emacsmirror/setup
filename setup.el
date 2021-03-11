@@ -336,6 +336,14 @@ form (append VAR), "
   :documentation "Add FUNCTION to HOOK only in buffers of the current mode."
   :repeatable t)
 
+(setup-define :also-load
+  (lambda (feature)
+    `(require ',feature))
+  :signature '(FEATURE ...)
+  :documentation "Load FEATURE with the current body."
+  :repeatable t
+  :after-loaded t)
+
 (setup-define :needs
   (lambda (binary)
     `(unless (executable-find ,binary)
