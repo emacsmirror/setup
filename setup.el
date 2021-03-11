@@ -125,6 +125,9 @@ Change indentation behaviour.  See symbol `lisp-indent-function'.
   :after-loaded
 Wrap the macro in a `with-eval-after-load' body.
 
+  :repeatable
+Allow macro to be automatically repeated, using FN's arity.
+
   :signature
 Give an advertised calling convention.
 
