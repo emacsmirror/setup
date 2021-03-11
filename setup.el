@@ -290,27 +290,28 @@ A documentation string."
 
 (setup-define :option
   (lambda (var val)
-    (cond ((symbolp var)
-           `(customize-set-variable ',var ,val "Modified by `setup'"))
+    (cond ((symbolp var) t)
           ((eq (car-safe var) 'append)
-           `(customize-set-variable
-             ',(cadr var)
-             (append (funcall (or (get ',(cadr var) 'custom-get) 'symbol-value)
-                              ',(cadr var))
-                     (list ,val))
-             "Modified by `setup'"))
+           (setq var (cadr var)
+                 val `(append (funcall (or (get ',var 'custom-get)
+                                           #'symbol-value)
+                                       ',var)
+                              (list ,val))))
           ((eq (car-safe var) 'prepend)
-           `(customize-set-variable
-             ',(cadr var)
-             (cons ,val (funcall (or (get ',(cadr var) 'custom-get) 'symbol-value)
-                                ',(cadr var)))
-             "Modified by `setup'"))))
+           (setq var (cadr var)
+                 val `(cons ,val
+                            (funcall (or (get ',var 'custom-get)
+                                         #'symbol-value)
+                                     ',var))))
+          ((error "Invalid variable %S" var)))
+    `(customize-set-variable ',var ,val "Modified by `setup'"))
   :signature '(NAME VAL ...)
   :documentation "Set the option NAME to VAL.
 
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
 will use the car value to modify the behaviour.  If NAME has the
-form (append VAR), "
+form (append VAR), VAL is appended to VAR.  If NAME has the
+form (prepend VAR), VAL is prepended to VAR."
   :repeatable t)
 
 (setup-define :hide-mode
@@ -321,10 +322,23 @@ form (append VAR), "
   :after-loaded t)
 
 (setup-define :local-set
-  (lambda (var val)
-    `(add-hook setup-hook (lambda () (setq-local ,var ,val))))
-  :signature '(VAR VAL ...)
-  :documentation "Set the value of VAR to VAL in buffers of the current mode."
+  (lambda (name val)
+    (cond ((symbolp name) t)
+          ((eq (car-safe name) 'append)
+           (setq name (cadr name)
+                 val `(append ,name (list val))))
+          ((eq (car-safe name) 'prepend)
+           (setq name (cadr name)
+                 val `(cons ,val ,name)))
+          ((error "Invalid variable %S" name)))
+    `(add-hook setup-hook (lambda () (setq-local ,name ,val))))
+  :signature '(name VAL ...)
+  :documentation "Set the value of NAME to VAL in buffers of the current mode.
+
+NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
+will use the car value to modify the behaviour.  If NAME has the
+form (append VAR), VAL is appended to VAR.  If NAME has the
+form (prepend VAR), VAL is prepended to VAR."
   :repeatable t)
 
 (setup-define :local-hook
