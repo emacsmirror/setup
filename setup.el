@@ -79,7 +79,8 @@
   "Return a docstring for `setup'."
   (with-temp-buffer
     (insert (documentation (symbol-function 'setup) 'raw))
-    (dolist (sym (mapcar #'car setup-macros))
+    (dolist (sym (sort (mapcar #'car setup-macros)
+                       #'string-lessp))
       (let ((sig (if (get sym 'setup-signature)
                      (cons sym (get sym 'setup-signature))
                    (list sym))))
