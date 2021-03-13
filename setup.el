@@ -1,18 +1,25 @@
 ;;; setup.el --- Helpful Configuration Macro    -*- lexical-binding: t -*-
 
+;; Copyright (C) 2021  Free Software Foundation, Inc.
+
 ;; Author: Philip K. <philipk@posteo.net>
 ;; Maintainer: Philip K. <philipk@posteo.net>
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: lisp, local
 
-;; This file is NOT part of Emacs.
-;;
-;; This file is in the public domain, to the extent possible under law,
-;; published under the CC0 1.0 Universal license.
-;;
-;; For a full copy of the CC0 license see
-;; https://creativecommons.org/publicdomain/zero/1.0/legalcode
+;; This package is Free Software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This package is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
