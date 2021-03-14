@@ -159,7 +159,6 @@ If not given, it is assumed nothing is evaluated."
                    (if (plist-get opts :repeatable) '(...)))))
   (put name 'setup-shorthand (plist-get opts :shorthand))
   (put name 'lisp-indent-function (plist-get opts :indent))
-  (put name 'setup-indent (plist-get opts :indent))
   (put name 'setup-repeatable (plist-get opts :repeatable))
   (put name 'setup-debug (plist-get opts :debug))
   ;; forget previous definition
