@@ -190,13 +190,14 @@ If not given, it is assumed nothing is evaluated."
         (delq (assoc (symbol-name name)
                      setup-edebug-specifications)
               setup-edebug-specifications))
-  (let ((body (cond ((eq (plist-get opts :debug) 'none) nil)
-                    ((plist-get opts :debug))
-                    ('(sexp)))))
+  (let ((body (or (plist-get opts :debug) '(sexp))))
     ;; FIXME: Use `&interpose' in Emacs≥28.
-    (push (if (plist-get opts :repeatable)
-              `(,(symbol-name name) &rest ,@body)
-            `(,(symbol-name name) ,@body))
+    (push `(,(symbol-name name)
+            ,@(and (plist-get opts :repeatable)
+                   '(&rest))
+            ,@(and (get name 'setup-signature)
+                   (or (plist-get opts :debug)
+                       '(sexp))))
           setup-edebug-specifications))
   (put 'setup 'edebug-form-spec
        (append '(&rest &or [symbolp sexp])
@@ -359,7 +360,6 @@ form (prepend VAR), VAL is prepended to VAR."
     `(delq (assq setup-mode minor-mode-alist)
            minor-mode-alist))
   :documentation "Hide the mode-line lighter of the current mode."
-  :debug 'none
   :after-loaded t)
 
 (setup-define :local-set
