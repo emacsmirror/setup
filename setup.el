@@ -406,7 +406,7 @@ form (prepend VAR), VAL is prepended to VAR."
   :documentation "If EXECUTABLE is not in the path, stop here."
   :repeatable 1)
 
-(setup-define :if
+(setup-define :only-if
   (lambda (condition)
     `(unless ,condition
        (throw 'setup-exit nil)))
