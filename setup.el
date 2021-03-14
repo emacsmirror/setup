@@ -314,8 +314,8 @@ If not given, it is assumed nothing is evaluated."
   :repeatable 2)
 
 (setup-define :hook
-  (lambda (hook)
-    `(add-hook setup-hook #',hook))
+  (lambda (function)
+    `(add-hook setup-hook #',function))
   :documentation "Add FUNCTION to current hook."
   :debug '(form [&or [symbolp sexp] form])
   :repeatable 1)
