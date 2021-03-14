@@ -400,10 +400,10 @@ form (prepend VAR), VAL is prepended to VAR."
   :after-loaded t)
 
 (setup-define :needs
-  (lambda (binary)
-    `(unless (executable-find ,binary)
+  (lambda (executable)
+    `(unless (executable-find ,executable)
        (throw 'setup-exit nil)))
-  :documentation "If PROGRAM is not in the path, stop here."
+  :documentation "If EXECUTABLE is not in the path, stop here."
   :repeatable 1)
 
 (setup-define :if
