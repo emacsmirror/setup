@@ -162,15 +162,15 @@ the specification."
   (setq setup-macros (delq (assq name setup-macros)
                            setup-macros))
   ;; define macro for `cl-macrolet'
-  (push (let* ((arity (func-arity fn))
-               (body (if (plist-get opts :repeatable)
+  (push (let* ((arity (plist-get opts :repeatable))
+               (body (if arity
                          `(progn
-                            (unless (zerop (mod (length args) ,(car arity)))
+                            (unless (zerop (mod (length args) ,arity))
                               (error "Illegal arguments"))
                             (let (aggr)
                               (while args
-                                (let ((rest (nthcdr ,(car arity) args)))
-                                  (setf (nthcdr ,(car arity) args) nil)
+                                (let ((rest (nthcdr ,arity args)))
+                                  (setf (nthcdr ,arity args) nil)
                                   (push (apply #',fn args) aggr)
                                   (setq args rest)))
                               `(progn ,@(nreverse aggr))))
@@ -245,7 +245,7 @@ the specification."
   :signature '(PACKAGE ...)
   :documentation "Install PACKAGE if it hasn't been installed yet."
   :shorthand #'cadr
-  :repeatable t)
+  :repeatable 1)
 
 (setup-define :require
   (lambda (feature)
@@ -253,7 +253,7 @@ the specification."
   :signature '(FEATURE ...)
   :documentation "Eagerly require FEATURE."
   :shorthand #'cadr
-  :repeatable t)
+  :repeatable 1)
 
 (setup-define :global
   (lambda (key fn)
@@ -265,7 +265,7 @@ the specification."
   :signature '(KEY FUNCTION ...)
   :documentation "Globally bind KEY to FUNCTION."
   :debug '(form [&or [symbolp sexp] form])
-  :repeatable t)
+  :repeatable 2)
 
 (setup-define :bind
   (lambda (key fn)
@@ -278,7 +278,7 @@ the specification."
   :documentation "Bind KEY to FUNCTION in current map."
   :after-loaded t
   :debug '(form [&or [symbolp sexp] form])
-  :repeatable t)
+  :repeatable 2)
 
 (setup-define :unbind
   (lambda (key)
@@ -291,7 +291,7 @@ the specification."
   :documentation "Unbind KEY in current map."
   :after-loaded t
   :debug '(form)
-  :repeatable t)
+  :repeatable 1)
 
 (setup-define :rebind
   (lambda (key fn)
@@ -306,7 +306,7 @@ the specification."
   :signature '(KEY FUNCTION ...)
   :documentation "Unbind the current key for FUNCTION, and bind it to KEY."
   :after-loaded t
-  :repeatable t)
+  :repeatable 2)
 
 (setup-define :hook
   (lambda (hook)
@@ -314,7 +314,7 @@ the specification."
   :signature '(FUNCTION ...)
   :documentation "Add FUNCTION to current hook."
   :debug '(form [&or [symbolp sexp] form])
-  :repeatable t)
+  :repeatable 1)
 
 (setup-define :hook-into
   (lambda (mode)
@@ -322,7 +322,7 @@ the specification."
                setup-mode))
   :signature '(HOOK ...)
   :documentation "Add current mode to HOOK."
-  :repeatable t)
+  :repeatable 1)
 
 (setup-define :option
   (lambda (var val)
@@ -349,7 +349,7 @@ will use the car value to modify the behaviour.  If NAME has the
 form (append VAR), VAL is appended to VAR.  If NAME has the
 form (prepend VAR), VAL is prepended to VAR."
   :debug '(sexp form)
-  :repeatable t)
+  :repeatable 2)
 
 (setup-define :hide-mode
   (lambda ()
@@ -378,7 +378,7 @@ will use the car value to modify the behaviour.  If NAME has the
 form (append VAR), VAL is appended to VAR.  If NAME has the
 form (prepend VAR), VAL is prepended to VAR."
   :debug '(sexp form)
-  :repeatable t)
+  :repeatable 2)
 
 (setup-define :local-hook
   (lambda (hook fn)
@@ -388,14 +388,14 @@ form (prepend VAR), VAL is prepended to VAR."
   :signature '(HOOK FUNCTION ...)
   :documentation "Add FUNCTION to HOOK only in buffers of the current mode."
   :debug '(symbolp form)
-  :repeatable t)
+  :repeatable 2)
 
 (setup-define :also-load
   (lambda (feature)
     `(require ',feature))
   :signature '(FEATURE ...)
   :documentation "Load FEATURE with the current body."
-  :repeatable t
+  :repeatable 1
   :after-loaded t)
 
 (setup-define :needs
@@ -404,7 +404,7 @@ form (prepend VAR), VAL is prepended to VAR."
        (throw 'setup-exit nil)))
   :signature '(PROGRAM ...)
   :documentation "If PROGRAM is not in the path, stop here."
-  :repeatable t)
+  :repeatable 1)
 
 (setup-define :if
   (lambda (condition)
@@ -413,7 +413,7 @@ form (prepend VAR), VAL is prepended to VAR."
   :signature '(CONDITION ...)
   :documentation "If CONDITION is non-nil, stop evaluating the body."
   :debug '(form)
-  :repeatable t)
+  :repeatable 1)
 
 (setup-define :when-loaded
   (lambda (&rest body) `(progn ,@body))
