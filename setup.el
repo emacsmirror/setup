@@ -88,10 +88,13 @@
     (insert (documentation (symbol-function 'setup) 'raw))
     (dolist (sym (sort (mapcar #'car setup-macros)
                        #'string-lessp))
-      (let ((sig (if (get sym 'setup-signature)
-                     (cons sym (get sym 'setup-signature))
-                   (list sym))))
-        (insert (format " - %s\n\n" sig)
+      (let ((sig (mapcar
+                  (lambda (arg)
+                    (if (string-match "\\`&" (symbol-name arg))
+                        arg
+                      (intern (upcase (symbol-name arg)))))
+                  (get sym 'setup-signature))))
+        (insert (format " - %s\n\n" (cons sym sig))
                 (or (get sym 'setup-documentation)
                     "No documentation.")
                 "\n\n")))
@@ -152,7 +155,10 @@ the specification."
   (cl-assert (listp opts))
   ;; save metadata
   (put name 'setup-documentation (plist-get opts :documentation))
-  (put name 'setup-signature (plist-get opts :signature))
+  (put name 'setup-signature
+       (or (plist-get opts :signature)
+           (append (help-function-arglist fn 'preserve-names)
+                   (if (plist-get opts :repeatable) '(...)))))
   (put name 'setup-shorthand (plist-get opts :shorthand))
   (put name 'lisp-indent-function (plist-get opts :indent))
   (put name 'setup-indent (plist-get opts :indent))
@@ -215,7 +221,6 @@ the specification."
            (setup-hook ',(intern (format "%s-hook" mode))))
        (ignore setup-mode setup-map setup-hook)
        ,@body))
-  :signature '(MODE &body BODY)
   :documentation "Change the MODE that BODY is configuring."
   :debug '(sexp setup)
   :indent 1)
@@ -224,7 +229,6 @@ the specification."
   (lambda (map &rest body)
     `(let ((setup-map ',map))
        ,@body))
-  :signature '(MAP &body BODY)
   :documentation "Change the MAP that BODY will bind to"
   :debug '(sexp setup)
   :indent 1)
@@ -233,7 +237,6 @@ the specification."
   (lambda (hook &rest body)
     `(let ((setup-hook ',hook))
        ,@body))
-  :signature '(HOOK &body BODY)
   :documentation "Change the HOOK that BODY will use."
   :debug '(sexp setup)
   :indent 1)
@@ -242,7 +245,6 @@ the specification."
   (lambda (package)
     `(unless (package-installed-p ',package)
        (package-install ',package)))
-  :signature '(PACKAGE ...)
   :documentation "Install PACKAGE if it hasn't been installed yet."
   :shorthand #'cadr
   :repeatable 1)
@@ -250,7 +252,6 @@ the specification."
 (setup-define :require
   (lambda (feature)
     `(require ',feature))
-  :signature '(FEATURE ...)
   :documentation "Eagerly require FEATURE."
   :shorthand #'cadr
   :repeatable 1)
@@ -287,7 +288,6 @@ the specification."
               `(kbd ,key)
           ,key)
        nil))
-  :signature '(KEY ...)
   :documentation "Unbind KEY in current map."
   :after-loaded t
   :debug '(form)
@@ -311,7 +311,6 @@ the specification."
 (setup-define :hook
   (lambda (hook)
     `(add-hook setup-hook #',hook))
-  :signature '(FUNCTION ...)
   :documentation "Add FUNCTION to current hook."
   :debug '(form [&or [symbolp sexp] form])
   :repeatable 1)
@@ -320,7 +319,6 @@ the specification."
   (lambda (mode)
     `(add-hook ',(intern (concat (symbol-name mode) "-hook"))
                setup-mode))
-  :signature '(HOOK ...)
   :documentation "Add current mode to HOOK."
   :repeatable 1)
 
@@ -370,7 +368,6 @@ form (prepend VAR), VAL is prepended to VAR."
                  val `(cons ,val ,name)))
           ((error "Invalid variable %S" name)))
     `(add-hook setup-hook (lambda () (setq-local ,name ,val))))
-  :signature '(name VAL ...)
   :documentation "Set the value of NAME to VAL in buffers of the current mode.
 
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
@@ -393,7 +390,6 @@ form (prepend VAR), VAL is prepended to VAR."
 (setup-define :also-load
   (lambda (feature)
     `(require ',feature))
-  :signature '(FEATURE ...)
   :documentation "Load FEATURE with the current body."
   :repeatable 1
   :after-loaded t)
@@ -402,7 +398,6 @@ form (prepend VAR), VAL is prepended to VAR."
   (lambda (binary)
     `(unless (executable-find ,binary)
        (throw 'setup-exit nil)))
-  :signature '(PROGRAM ...)
   :documentation "If PROGRAM is not in the path, stop here."
   :repeatable 1)
 
@@ -410,14 +405,12 @@ form (prepend VAR), VAL is prepended to VAR."
   (lambda (condition)
     `(unless ,condition
        (throw 'setup-exit nil)))
-  :signature '(CONDITION ...)
   :documentation "If CONDITION is non-nil, stop evaluating the body."
   :debug '(form)
   :repeatable 1)
 
 (setup-define :when-loaded
   (lambda (&rest body) `(progn ,@body))
-  :signature '(&body BODY)
   :documentation "Evaluate BODY after the current feature has been loaded."
   :debug '(body)
   :after-loaded t)
