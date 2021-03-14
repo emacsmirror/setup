@@ -81,6 +81,9 @@
 (defvar setup-macros nil
   "Local macro definitions to be bound in `setup' bodies.")
 
+(defvar setup-edebug-specifications nil
+  "Part of the edebug specification for `setup'.")
+
 ;;;###autoload
 (defun setup-make-docstring ()
   "Return a docstring for `setup'."
@@ -159,7 +162,6 @@ If not given, it is assumed nothing is evaluated."
                    (if (plist-get opts :repeatable) '(...)))))
   (put name 'setup-shorthand (plist-get opts :shorthand))
   (put name 'lisp-indent-function (plist-get opts :indent))
-  (put name 'setup-repeatable (plist-get opts :repeatable))
   (put name 'setup-debug (plist-get opts :debug))
   ;; forget previous definition
   (setq setup-macros (delq (assq name setup-macros)
@@ -183,17 +185,23 @@ If not given, it is assumed nothing is evaluated."
                       `(with-eval-after-load setup-name ,,body))
             `(,name (&rest args) `,,body)))
         setup-macros)
+  ;; update edebug specification for `setup'
+  (setq setup-edebug-specifications
+        (delq (assoc (symbol-name name)
+                     setup-edebug-specifications)
+              setup-edebug-specifications))
+  (let ((body (cond ((eq (plist-get opts :debug) 'none) nil)
+                    ((plist-get opts :debug))
+                    ('(sexp)))))
+    ;; FIXME: Use `&interpose' in Emacs≥28.
+    (push (if (plist-get opts :repeatable)
+              `(,(symbol-name name) &rest ,@body)
+            `(,(symbol-name name) ,@body))
+          setup-edebug-specifications))
   (put 'setup 'edebug-form-spec
-       (let (specs)
-         (dolist (name (mapcar #'car setup-macros))
-           (let ((body (cond ((eq (get name 'setup-debug) 'none) nil)
-                             ((get name 'setup-debug) nil)
-                             ('(sexp)))))
-             (push (if (get name 'setup-repeatable)
-                       `(,(symbol-name name) &rest ,@body)
-                     `(,(symbol-name name) ,@body))
-                   specs)))
-         `(&rest &or [symbolp sexp] ,@specs form))))
+       (append '(&rest &or [symbolp sexp])
+               setup-edebug-specifications
+               '(form))))
 
 
 ;;; definitions of `setup' keywords
