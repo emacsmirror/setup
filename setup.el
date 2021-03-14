@@ -125,30 +125,28 @@ The following local macros are defined in a `setup' body:\n\n"
   "Define `setup'-local macro NAME using function FN.
 The plist OPTS may contain the key-value pairs:
 
-  :name
+  :name NAME
 Specify a function to use, for extracting the feature name of a
 NAME entry, if it is the first element in a setup macro.
 
-  :indent
+  :indent SPEC
 Change indentation behaviour.  See symbol `lisp-indent-function'.
 
-  :after-loaded
+  :after-loaded BOOL
 Wrap the macro in a `with-eval-after-load' body.
 
-  :repeatable
-Allow macro to be automatically repeated, using FN's arity.
+  :repeatable ARITY
+Allow macro to be automatically repeated.
 
-  :signature
+  :signature SIG
 Give an advertised calling convention.
 
-  :documentation
+  :documentation STRING
 A documentation string.
 
-  :debug
-A edebug specification, see Info node `(elisp)
-Specification List'.  If not given, it is assumed nothing is
-evaluated.  If macro is :repeatable, a &rest will be added before
-the specification."
+  :debug SPEC
+A edebug specification, see Info node `(elisp) Specification List'.
+If not given, it is assumed nothing is evaluated."
   (declare (indent 1))
   (cl-assert (symbolp name))
   (cl-assert (functionp fn))
