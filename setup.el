@@ -208,15 +208,14 @@ If not given, it is assumed nothing is evaluated."
 ;;; definitions of `setup' keywords
 
 (setup-define :with-feature
-  (lambda (name &rest body)
-    `(let ((setup-name ',name))
+  (lambda (feature &rest body)
+    `(let ((setup-name ',feature))
        (ignore setup-name)
-       (:with-mode ,(if (string-match-p "-mode\\'" (symbol-name name))
-                        name
-                      (intern (format "%s-mode" name)))
+       (:with-mode ,(if (string-match-p "-mode\\'" (symbol-name feature))
+                        feature
+                      (intern (format "%s-mode" feature)))
          ,@body)))
-  :signature '(SYSTEM &body BODY)
-  :documentation "Change the SYSTEM that BODY is configuring."
+  :documentation "Change the FEATURE that BODY is configuring."
   :debug '(sexp setup)
   :indent 1)
 
@@ -263,26 +262,24 @@ If not given, it is assumed nothing is evaluated."
   :repeatable 1)
 
 (setup-define :global
-  (lambda (key fn)
+  (lambda (key command)
     `(global-set-key
       ,(cond ((stringp key) (kbd key))
              ((symbolp key) `(kbd ,key))
              (key))
-      #',fn))
-  :signature '(KEY FUNCTION ...)
-  :documentation "Globally bind KEY to FUNCTION."
+      #',command))
+  :documentation "Globally bind KEY to COMMAND."
   :debug '(form [&or [symbolp sexp] form])
   :repeatable 2)
 
 (setup-define :bind
-  (lambda (key fn)
+  (lambda (key command)
     `(define-key (eval setup-map)
        ,(if (or (symbolp key) (stringp key))
             `(kbd ,key)
           ,key)
-       #',fn))
-  :signature '(KEY FUNCTION ...)
-  :documentation "Bind KEY to FUNCTION in current map."
+       #',command))
+  :documentation "Bind KEY to COMMAND in current map."
   :after-loaded t
   :debug '(form [&or [symbolp sexp] form])
   :repeatable 2)
@@ -300,17 +297,16 @@ If not given, it is assumed nothing is evaluated."
   :repeatable 1)
 
 (setup-define :rebind
-  (lambda (key fn)
+  (lambda (key command)
     `(progn
-       (dolist (key (where-is-internal ',fn (eval setup-map)))
+       (dolist (key (where-is-internal ',command (eval setup-map)))
          (define-key (eval setup-map) key nil))
        (define-key (eval setup-map)
          ,(if (or (symbolp key) (stringp key))
               `(kbd ,key)
             ,key)
-         #',fn)))
-  :signature '(KEY FUNCTION ...)
-  :documentation "Unbind the current key for FUNCTION, and bind it to KEY."
+         #',command)))
+  :documentation "Unbind the current key for COMMAND, and bind it to KEY."
   :after-loaded t
   :repeatable 2)
 
@@ -329,23 +325,22 @@ If not given, it is assumed nothing is evaluated."
   :repeatable 1)
 
 (setup-define :option
-  (lambda (var val)
-    (cond ((symbolp var) t)
-          ((eq (car-safe var) 'append)
-           (setq var (cadr var)
-                 val `(append (funcall (or (get ',var 'custom-get)
+  (lambda (name val)
+    (cond ((symbolp name) t)
+          ((eq (car-safe name) 'append)
+           (setq name (cadr name)
+                 val `(append (funcall (or (get ',name 'custom-get)
                                            #'symbol-value)
-                                       ',var)
+                                       ',name)
                               (list ,val))))
-          ((eq (car-safe var) 'prepend)
-           (setq var (cadr var)
+          ((eq (car-safe name) 'prepend)
+           (setq name (cadr name)
                  val `(cons ,val
-                            (funcall (or (get ',var 'custom-get)
+                            (funcall (or (get ',name 'custom-get)
                                          #'symbol-value)
-                                     ',var))))
-          ((error "Invalid variable %S" var)))
-    `(customize-set-variable ',var ,val "Modified by `setup'"))
-  :signature '(NAME VAL ...)
+                                     ',name))))
+          ((error "Invalid option %S" name)))
+    `(customize-set-variable ',name ,val "Modified by `setup'"))
   :documentation "Set the option NAME to VAL.
 
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
@@ -383,11 +378,10 @@ form (prepend VAR), VAL is prepended to VAR."
   :repeatable 2)
 
 (setup-define :local-hook
-  (lambda (hook fn)
+  (lambda (hook function)
     `(add-hook setup-hook
                (lambda ()
-                 (add-hook ',hook #',fn nil t))))
-  :signature '(HOOK FUNCTION ...)
+                 (add-hook ',hook #',function nil t))))
   :documentation "Add FUNCTION to HOOK only in buffers of the current mode."
   :debug '(symbolp form)
   :repeatable 2)
