@@ -151,6 +151,11 @@ A documentation string.
 A edebug specification, see Info node `(elisp) Specification List'.
 If not given, it is assumed nothing is evaluated."
   (declare (indent 1))
+  ;; NB.: NAME is not required to by a keyword, even though all macros
+  ;;      specified on the next page use keywords.  The rationale for
+  ;;      this is currently that there is no clean way to "locally"
+  ;;      modify indentation, without setting `lisp-indent-function',
+  ;;      chaining the indentation behaviour everywhere.
   (cl-assert (symbolp name))
   (cl-assert (functionp fn))
   (cl-assert (listp opts))
