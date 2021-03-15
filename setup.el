@@ -190,15 +190,14 @@ If not given, it is assumed nothing is evaluated."
         (delq (assoc (symbol-name name)
                      setup-edebug-specifications)
               setup-edebug-specifications))
-  (let ((body (or (plist-get opts :debug) '(sexp))))
-    ;; FIXME: Use `&interpose' in Emacs≥28.
-    (push `(,(symbol-name name)
-            ,@(and (plist-get opts :repeatable)
-                   '(&rest))
-            ,@(and (get name 'setup-signature)
-                   (or (plist-get opts :debug)
-                       '(sexp))))
-          setup-edebug-specifications))
+  ;; FIXME: Use `&interpose' in Emacs≥28.
+  (push `(,(symbol-name name)
+          ,@(and (or (plist-get opts :repeatable)
+                     (null (plist-get opts :debug)))
+                 '(&rest))
+          ,@(or (plist-get opts :debug)
+                '(sexp)))
+        setup-edebug-specifications)
   (put 'setup 'edebug-form-spec
        (append '(&rest &or [symbolp sexp])
                setup-edebug-specifications
