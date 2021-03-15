@@ -70,9 +70,9 @@ initialization file can be byte-compiled more efficiently.
 Bugs
 ----
 
-Bugs or comments can be submitted to my [public inbox][mail].
-own. Note that non-trivial contributions require a [copyright
-assignment][ca] to the FSF.
+Bugs or comments can be submitted to my [public inbox][mail] or via
+the [GitHub mirror][github].  Note that non-trivial contributions
+require a [copyright assignment][ca] to the FSF.
 
 Copying
 -------
@@ -82,5 +82,6 @@ Public Domain Dedication][cc0] license.
 
 [elpa]: http://elpa.gnu.org/packages/setup.html
 [mail]: https://lists.sr.ht/~zge/public-inbox
+[github]: https://github.com/phikal/setup.el
 [ca]: https://www.gnu.org/software/emacs/manual/html_node/emacs/Copyright-Assignment.html#Copyright-Assignment
 [cc0]: https://creativecommons.org/publicdomain/zero/1.0/deed
