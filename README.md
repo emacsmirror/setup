@@ -47,8 +47,8 @@ will be replaced with the functional equivalent of
       (customize-set-variable 'yas-wrap-around-region t))
     (add-hook 'prog-mode-hook #'yas-minor-mode)
 
-Additional "keywords" can be defined using `setup-define'. All known
-keywords are documented in the docstring for `setup'.
+Additional "keywords" can be defined using `setup-define`. All known
+keywords are documented in the docstring for `setup`.
 
 Installation
 ------------
