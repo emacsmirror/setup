@@ -303,7 +303,6 @@ If not given, it is assumed nothing is evaluated."
   (lambda (function)
     `(add-hook setup-hook #',function))
   :documentation "Add FUNCTION to current hook."
-  :debug '(form [&or [symbolp sexp] form])
   :repeatable t)
 
 (setup-define :hook-into
