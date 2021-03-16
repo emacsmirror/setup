@@ -72,7 +72,9 @@
 ;;; Code:
 
 (defvar setup-macros nil
-  "Local macro definitions to be bound in `setup' bodies.")
+  "Local macro definitions to be bound in `setup' bodies.
+Do not modify this variable by hand.  Instead use
+`setup-define.'")
 
 ;;;###autoload
 (defun setup-make-docstring ()
