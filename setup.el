@@ -329,7 +329,6 @@ If not given, it is assumed nothing is evaluated."
           ((error "Invalid option %S" name)))
     `(customize-set-variable ',name ,val "Modified by `setup'"))
   :documentation "Set the option NAME to VAL.
-
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
 will use the car value to modify the behaviour.  If NAME has the
 form (append VAR), VAL is appended to VAR.  If NAME has the
@@ -356,7 +355,6 @@ form (prepend VAR), VAL is prepended to VAR."
           ((error "Invalid variable %S" name)))
     `(add-hook setup-hook (lambda () (setq-local ,name ,val))))
   :documentation "Set the value of NAME to VAL in buffers of the current mode.
-
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
 will use the car value to modify the behaviour.  If NAME has the
 form (append VAR), VAL is appended to VAR.  If NAME has the
