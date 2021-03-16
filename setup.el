@@ -240,15 +240,15 @@ If not given, it is assumed nothing is evaluated."
     `(unless (package-installed-p ',package)
        (package-install ',package)))
   :documentation "Install PACKAGE if it hasn't been installed yet."
-  :shorthand #'cadr
-  :repeatable t)
+  :repeatable t
+  :shorthand #'cadr)
 
 (setup-define :require
   (lambda (feature)
     `(require ',feature))
   :documentation "Eagerly require FEATURE."
-  :shorthand #'cadr
-  :repeatable t)
+  :repeatable t
+  :shorthand #'cadr)
 
 (setup-define :global
   (lambda (key command)
@@ -258,7 +258,7 @@ If not given, it is assumed nothing is evaluated."
              (key))
       #',command))
   :documentation "Globally bind KEY to COMMAND."
-  :debug '(form [&or [symbolp sexp] form])
+  :debug '(form function-form)
   :repeatable t)
 
 (setup-define :bind
@@ -270,7 +270,7 @@ If not given, it is assumed nothing is evaluated."
        #',command))
   :documentation "Bind KEY to COMMAND in current map."
   :after-loaded t
-  :debug '(form [&or [symbolp sexp] form])
+  :debug '(form function-form)
   :repeatable t)
 
 (setup-define :unbind
@@ -297,6 +297,7 @@ If not given, it is assumed nothing is evaluated."
          #',command)))
   :documentation "Unbind the current key for COMMAND, and bind it to KEY."
   :after-loaded t
+  :debug '(form function-form)
   :repeatable t)
 
 (setup-define :hook
@@ -379,16 +380,16 @@ form (prepend VAR), VAL is prepended to VAR."
     `(advice-add ,symbol ,where ,function))
   :documentation "Add a piece of advice on a function.
 See `advice-add' for more details."
+  :after-loaded t
   :debug '(sexp sexp function-form)
-  :repeatable t
-  :after-loaded t)
+  :repeatable t)
 
 (setup-define :also-load
   (lambda (feature)
     `(require ',feature))
   :documentation "Load FEATURE with the current body."
-  :repeatable t
-  :after-loaded t)
+  :after-loaded t
+  :repeatable t)
 
 (setup-define :needs
   (lambda (executable)
