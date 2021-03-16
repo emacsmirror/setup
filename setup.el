@@ -4,7 +4,7 @@
 
 ;; Author: Philip K. <philipk@posteo.net>
 ;; Maintainer: Philip K. <philipk@posteo.net>
-;; Version: 0.1.1
+;; Version: 0.1.2
 ;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: lisp, local
 ;; URL: https://git.sr.ht/~zge/setup
