@@ -80,9 +80,11 @@ Do not modify this variable by hand.  Instead use
 (defun setup-make-docstring ()
   "Return a docstring for `setup'."
   (with-temp-buffer
-    (insert (documentation (symbol-function 'setup) 'raw))
-    (dolist (sym (sort (mapcar #'car setup-macros)
-                       #'string-lessp))
+    (insert (documentation (symbol-function 'setup) 'raw)
+            "\n\n"
+            "Within BODY, `setup' provides these local macros:")
+    (dolist (sym (sort (mapcar #'car setup-macros) #'string-lessp))
+      (newline 2)
       (let ((sig (mapcar
                   (lambda (arg)
                     (if (string-match "\\`&" (symbol-name arg))
@@ -91,17 +93,14 @@ Do not modify this variable by hand.  Instead use
                   (get sym 'setup-signature))))
         (insert (format " - %s\n\n" (cons sym sig))
                 (or (get sym 'setup-documentation)
-                    "No documentation.")
-                "\n\n")))
+                    "No documentation."))))
     (buffer-string)))
 
 ;;;###autoload
 (defmacro setup (name &rest body)
   "Configure feature or subsystem NAME.
 BODY may contain special forms defined by `setup-define', but
-will otherwise just be evaluated as is.
-
-The following local macros are defined in a `setup' body:\n\n"
+will otherwise just be evaluated as is."
   (declare (debug (&rest &or [symbolp sexp] form))
            (indent defun))
   (when (consp name)
