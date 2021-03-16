@@ -37,10 +37,10 @@
 ;;
 ;;    (setup (:package yasnippet)
 ;;      (:with-mode yas-minor-mode
-;;      (:rebind "<backtab>" yas-expand)
-;;      (:option yas-prompt-functions '(yas-completing-prompt)
+;;        (:rebind "<backtab>" yas-expand)
+;;        (:option yas-prompt-functions '(yas-completing-prompt)
 ;;               yas-wrap-around-region t)
-;;      (:hook-into prog-mode)))
+;;        (:hook-into prog-mode)))
 
 ;; will be replaced with the functional equivalent of
 
