@@ -116,10 +116,11 @@ The following local macros are defined in a `setup' body:\n\n"
       (when shorthand
         (push name body)
         (setq name (funcall shorthand name)))))
-  `(cl-macrolet ,setup-macros
-     (catch 'setup-exit
-       (:with-feature ,name ,@body)
-       t)))
+  (macroexpand-all
+   `(catch 'setup-exit
+      (:with-feature ,name ,@body)
+      t)
+   (append setup-macros macroexpand-all-environment)))
 
 ;;;###autoload
 (put 'setup 'function-documentation '(setup-make-docstring))
@@ -168,28 +169,21 @@ If not given, it is assumed nothing is evaluated."
   (put name 'setup-shorthand (plist-get opts :shorthand))
   (put name 'lisp-indent-function (plist-get opts :indent))
   (put name 'setup-debug (plist-get opts :debug))
-  ;; forget previous definition
-  (setq setup-macros (delq (assq name setup-macros)
-                           setup-macros))
-  ;; define macro for `cl-macrolet'
-  (push (let* ((arity (plist-get opts :repeatable))
-               (body (if arity
-                         `(progn
-                            (unless (zerop (mod (length args) ,arity))
-                              (error "Illegal arguments"))
-                            (let (aggr)
-                              (while args
-                                (let ((rest (nthcdr ,arity args)))
-                                  (setf (nthcdr ,arity args) nil)
-                                  (push (apply #',fn args) aggr)
-                                  (setq args rest)))
-                              `(progn ,@(nreverse aggr))))
-                       `(apply #',fn args))))
+  ;; define macro for `macroexpand-all'
+  (setf (alist-get name setup-macros)   ;New in Emacs-25.
+        (let* ((arity (plist-get opts :repeatable))
+               (fn (if (null arity) fn
+                     (lambda (&rest args)
+                       (unless (zerop (mod (length args) arity))
+                         (error "Illegal arguments"))
+                       (let (aggr)
+                         (while args
+                           (let ((rest (nthcdr arity args)))
+                             (setf (nthcdr arity args) nil)
+                             (push (apply fn args) aggr)
+                             (setq args rest)))
+                         `(progn ,@(nreverse aggr)))))))
           (if (plist-get opts :after-loaded)
-              `(,name (&rest args)
-                      `(with-eval-after-load setup-name ,,body))
-            `(,name (&rest args) `,,body)))
-        setup-macros)
   ;; update edebug specification for `setup'
   (setq setup-edebug-specifications
         (delq (assoc (symbol-name name)
@@ -207,6 +201,9 @@ If not given, it is assumed nothing is evaluated."
        (append '(&rest &or [symbolp sexp])
                setup-edebug-specifications
                '(form))))
+              (lambda (&rest args)
+                `(with-eval-after-load setup-name ,(apply fn args)))
+            fn)))
 
 
 ;;; definitions of `setup' keywords
