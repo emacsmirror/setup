@@ -406,7 +406,10 @@ See `advice-add' for more details."
 
 (setup-define :when-loaded
   (lambda (&rest body) `(progn ,@body))
-  :documentation "Evaluate BODY after the current feature has been loaded."
+  :documentation "Evaluate BODY after the current feature has been loaded.
+Avoid using this macro whenever possible, and
+instead choose a more specialized alternative or write one
+yourself."
   :debug '(body)
   :after-loaded t)
 
