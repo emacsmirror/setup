@@ -134,7 +134,8 @@ Change indentation behaviour.  See symbol `lisp-indent-function'.
 Wrap the macro in a `with-eval-after-load' body.
 
   :repeatable ARITY
-Allow macro to be automatically repeated.
+Allow macro to be automatically repeated.  If ARITY is t, use
+`func-arity' to determine the minimal number of arguments.
 
   :signature SIG
 Give an advertised calling convention.
@@ -163,7 +164,9 @@ If not given, it is assumed nothing is evaluated."
   (put name 'lisp-indent-function (plist-get opts :indent))
   ;; define macro for `macroexpand-all'
   (setf (alist-get name setup-macros)   ;New in Emacs-25.
-        (let* ((arity (plist-get opts :repeatable))
+        (let* ((arity (if (eq (plist-get opts :repeatable) t)
+                          (car (func-arity fn))
+                        (plist-get opts :repeatable)))
                (fn (if (null arity) fn
                      (lambda (&rest args)
                        (unless (zerop (mod (length args) arity))
@@ -238,14 +241,14 @@ If not given, it is assumed nothing is evaluated."
        (package-install ',package)))
   :documentation "Install PACKAGE if it hasn't been installed yet."
   :shorthand #'cadr
-  :repeatable 1)
+  :repeatable t)
 
 (setup-define :require
   (lambda (feature)
     `(require ',feature))
   :documentation "Eagerly require FEATURE."
   :shorthand #'cadr
-  :repeatable 1)
+  :repeatable t)
 
 (setup-define :global
   (lambda (key command)
@@ -256,7 +259,7 @@ If not given, it is assumed nothing is evaluated."
       #',command))
   :documentation "Globally bind KEY to COMMAND."
   :debug '(form [&or [symbolp sexp] form])
-  :repeatable 2)
+  :repeatable t)
 
 (setup-define :bind
   (lambda (key command)
@@ -268,7 +271,7 @@ If not given, it is assumed nothing is evaluated."
   :documentation "Bind KEY to COMMAND in current map."
   :after-loaded t
   :debug '(form [&or [symbolp sexp] form])
-  :repeatable 2)
+  :repeatable t)
 
 (setup-define :unbind
   (lambda (key)
@@ -280,7 +283,7 @@ If not given, it is assumed nothing is evaluated."
   :documentation "Unbind KEY in current map."
   :after-loaded t
   :debug '(form)
-  :repeatable 1)
+  :repeatable t)
 
 (setup-define :rebind
   (lambda (key command)
@@ -294,21 +297,21 @@ If not given, it is assumed nothing is evaluated."
          #',command)))
   :documentation "Unbind the current key for COMMAND, and bind it to KEY."
   :after-loaded t
-  :repeatable 2)
+  :repeatable t)
 
 (setup-define :hook
   (lambda (function)
     `(add-hook setup-hook #',function))
   :documentation "Add FUNCTION to current hook."
   :debug '(form [&or [symbolp sexp] form])
-  :repeatable 1)
+  :repeatable t)
 
 (setup-define :hook-into
   (lambda (mode)
     `(add-hook ',(intern (concat (symbol-name mode) "-hook"))
                setup-mode))
   :documentation "Add current mode to HOOK."
-  :repeatable 1)
+  :repeatable t)
 
 (setup-define :option
   (lambda (name val)
@@ -334,7 +337,7 @@ will use the car value to modify the behaviour.  If NAME has the
 form (append VAR), VAL is appended to VAR.  If NAME has the
 form (prepend VAR), VAL is prepended to VAR."
   :debug '(sexp form)
-  :repeatable 2)
+  :repeatable t)
 
 (setup-define :hide-mode
   (lambda ()
@@ -361,7 +364,7 @@ will use the car value to modify the behaviour.  If NAME has the
 form (append VAR), VAL is appended to VAR.  If NAME has the
 form (prepend VAR), VAL is prepended to VAR."
   :debug '(sexp form)
-  :repeatable 2)
+  :repeatable t)
 
 (setup-define :local-hook
   (lambda (hook function)
@@ -370,13 +373,13 @@ form (prepend VAR), VAL is prepended to VAR."
                  (add-hook ',hook #',function nil t))))
   :documentation "Add FUNCTION to HOOK only in buffers of the current mode."
   :debug '(symbolp form)
-  :repeatable 2)
+  :repeatable t)
 
 (setup-define :also-load
   (lambda (feature)
     `(require ',feature))
   :documentation "Load FEATURE with the current body."
-  :repeatable 1
+  :repeatable t
   :after-loaded t)
 
 (setup-define :needs
@@ -392,7 +395,7 @@ form (prepend VAR), VAL is prepended to VAR."
        (throw 'setup-exit nil)))
   :documentation "If CONDITION is non-nil, stop evaluating the body."
   :debug '(form)
-  :repeatable 1)
+  :repeatable t)
 
 (setup-define :when-loaded
   (lambda (&rest body) `(progn ,@body))
