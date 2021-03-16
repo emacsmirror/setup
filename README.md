@@ -10,11 +10,9 @@ example, these macros:
     (:global (key shell))
     (:bind (key bury-buffer))))
 
-
 (setup (:package paredit)
   (:hide-mode)
   (:hook-into scheme-mode lisp-mode))
-
 
 (setup (:package yasnippet)
   (:with-mode yas-minor-mode
@@ -31,7 +29,6 @@ will be replaced with the functional equivalent of
 (with-eval-after-load 'shell
    (define-key shell-mode-map (kbd "C-c s") #'bury-buffer))
 
-
 (unless (package-install-p 'paredit)
   (package-install 'paredit))
 (delq (assq 'paredit-mode minor-mode-alist)
@@ -39,15 +36,14 @@ will be replaced with the functional equivalent of
 (add-hook 'scheme-mode-hook #'paredit-mode)
 (add-hook 'lisp-mode-hook #'paredit-mode)
 
-
 (unless (package-install-p 'yasnippet)
   (package-install 'yasnippet))
 (with-eval-after-load 'yasnippet
   (dolist (key (where-is-internal 'yas-expand yas-minor-mode-map))
     (define-key yas-minor-mode-map key nil))
   (define-key yas-minor-mode-map "<backtab>" #'yas-expand)
-  (customize-set-variable 'yas-prompt-functions '(yas-completing-prompt))
-  (customize-set-variable 'yas-wrap-around-region t))
+(customize-set-variable 'yas-prompt-functions '(yas-completing-prompt))
+(customize-set-variable 'yas-wrap-around-region t))
 (add-hook 'prog-mode-hook #'yas-minor-mode)
 ~~~
 
