@@ -73,11 +73,6 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl-lib))
-
-
-;;; `setup' macros
-
 (defvar setup-macros nil
   "Local macro definitions to be bound in `setup' bodies.")
 
@@ -157,9 +152,8 @@ If not given, it is assumed nothing is evaluated."
   ;;      this is currently that there is no clean way to "locally"
   ;;      modify indentation, without setting `lisp-indent-function',
   ;;      chaining the indentation behaviour everywhere.
-  (cl-assert (symbolp name))
-  (cl-assert (functionp fn))
-  (cl-assert (listp opts))
+  (unless (symbolp name)
+    (error "Macro name must be a symbol"))
   ;; save metadata
   (put name 'setup-documentation (plist-get opts :documentation))
   (put name 'setup-signature
