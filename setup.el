@@ -5,7 +5,7 @@
 ;; Author: Philip K. <philipk@posteo.net>
 ;; Maintainer: Philip K. <philipk@posteo.net>
 ;; Version: 0.1.1
-;; Package-Requires: ((emacs "24.4"))
+;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: lisp, local
 
 ;; This package is Free Software: you can redistribute it and/or modify
@@ -105,7 +105,8 @@ BODY may contain special forms defined by `setup-define', but
 will otherwise just be evaluated as is.
 
 The following local macros are defined in a `setup' body:\n\n"
-  (declare (debug (sexp body)) (indent defun))
+  (declare (debug (&rest &or [symbolp sexp] form))
+           (indent defun))
   (when (consp name)
     (let ((shorthand (get (car name) 'setup-shorthand)))
       (when shorthand
@@ -162,7 +163,6 @@ If not given, it is assumed nothing is evaluated."
                    (if (plist-get opts :repeatable) '(...)))))
   (put name 'setup-shorthand (plist-get opts :shorthand))
   (put name 'lisp-indent-function (plist-get opts :indent))
-  (put name 'setup-debug (plist-get opts :debug))
   ;; define macro for `macroexpand-all'
   (setf (alist-get name setup-macros)   ;New in Emacs-25.
         (let* ((arity (plist-get opts :repeatable))
@@ -178,26 +178,19 @@ If not given, it is assumed nothing is evaluated."
                              (setq args rest)))
                          `(progn ,@(nreverse aggr)))))))
           (if (plist-get opts :after-loaded)
-  ;; update edebug specification for `setup'
-  (setq setup-edebug-specifications
-        (delq (assoc (symbol-name name)
-                     setup-edebug-specifications)
-              setup-edebug-specifications))
-  ;; FIXME: Use `&interpose' in Emacs≥28.
-  (push `(,(symbol-name name)
-          ,@(and (or (plist-get opts :repeatable)
-                     (null (plist-get opts :debug)))
-                 '(&rest))
-          ,@(or (plist-get opts :debug)
-                '(sexp)))
-        setup-edebug-specifications)
-  (put 'setup 'edebug-form-spec
-       (append '(&rest &or [symbolp sexp])
-               setup-edebug-specifications
-               '(form))))
               (lambda (&rest args)
                 `(with-eval-after-load setup-name ,(apply fn args)))
             fn)))
+  ;; FIXME: Use `&interpose' with `edebug-lexical-macro-ctx' in Emacs≥28;
+  ;; see `cl-macrolet' how to do it.
+  (setf (alist-get (symbol-name name)
+                   (cdddr (get 'setup 'edebug-form-spec))
+                   nil nil #'equal)
+        (let ((spec (plist-get opts :debug)))
+          (cond ((null spec) '(&rest sexp))
+                ((plist-get opts :repeatable)
+                 (cons '&rest spec))
+                (t spec)))))
 
 
 ;;; definitions of `setup' keywords
