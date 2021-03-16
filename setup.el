@@ -374,6 +374,15 @@ form (prepend VAR), VAL is prepended to VAR."
   :debug '(symbolp form)
   :repeatable t)
 
+(setup-define :advise
+  (lambda (symbol where function)
+    `(advice-add ,symbol ,where ,function))
+  :documentation "Add a piece of advice on a function.
+See `advice-add' for more details."
+  :debug '(sexp sexp function-form)
+  :repeatable t
+  :after-loaded t)
+
 (setup-define :also-load
   (lambda (feature)
     `(require ',feature))
