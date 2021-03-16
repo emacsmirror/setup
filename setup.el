@@ -257,7 +257,7 @@ If not given, it is assumed nothing is evaluated."
              (key))
       #',command))
   :documentation "Globally bind KEY to COMMAND."
-  :debug '(form function-form)
+  :debug '(form sexp)
   :repeatable t)
 
 (setup-define :bind
@@ -269,7 +269,7 @@ If not given, it is assumed nothing is evaluated."
        #',command))
   :documentation "Bind KEY to COMMAND in current map."
   :after-loaded t
-  :debug '(form function-form)
+  :debug '(form sexp)
   :repeatable t)
 
 (setup-define :unbind
@@ -296,7 +296,7 @@ If not given, it is assumed nothing is evaluated."
          #',command)))
   :documentation "Unbind the current key for COMMAND, and bind it to KEY."
   :after-loaded t
-  :debug '(form function-form)
+  :debug '(form sexp)
   :repeatable t)
 
 (setup-define :hook
@@ -369,7 +369,7 @@ form (prepend VAR), VAL is prepended to VAR."
                (lambda ()
                  (add-hook ',hook #',function nil t))))
   :documentation "Add FUNCTION to HOOK only in buffers of the current mode."
-  :debug '(symbolp form)
+  :debug '(symbolp sexp)
   :repeatable t)
 
 (setup-define :advise
