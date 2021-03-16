@@ -74,9 +74,6 @@
 (defvar setup-macros nil
   "Local macro definitions to be bound in `setup' bodies.")
 
-(defvar setup-edebug-specifications nil
-  "Part of the edebug specification for `setup'.")
-
 ;;;###autoload
 (defun setup-make-docstring ()
   "Return a docstring for `setup'."
