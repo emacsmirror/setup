@@ -101,7 +101,8 @@ Do not modify this variable by hand.  Instead use
 (defmacro setup (name &rest body)
   "Configure feature or subsystem NAME.
 BODY may contain special forms defined by `setup-define', but
-will otherwise just be evaluated as is."
+will otherwise just be evaluated as is.
+NAME may also be a macro, if it can provide a symbol."
   (declare (debug (&rest &or [symbolp sexp] form))
            (indent defun))
   (when (consp name)
@@ -141,6 +142,12 @@ Give an advertised calling convention.
 
   :documentation STRING
 A documentation string.
+
+  :shorthand EXTRACTOR
+If a macro defines a shorthand, it might be used as the first
+argument of a `setup' form, instead of a symbol.  EXTRACTOR must
+be a function of one argument.  It takes the entire macro and
+returns a symbol to replace NAME.
 
   :debug SPEC
 A edebug specification, see Info node `(elisp) Specification List'.
@@ -238,14 +245,18 @@ If not given, it is assumed nothing is evaluated."
   (lambda (package)
     `(unless (package-installed-p ',package)
        (package-install ',package)))
-  :documentation "Install PACKAGE if it hasn't been installed yet."
+  :documentation "Install PACKAGE if it hasn't been installed yet.
+This macro can be used as HEAD, and it will replace itself with
+the first PACKAGE."
   :repeatable t
   :shorthand #'cadr)
 
 (setup-define :require
   (lambda (feature)
     `(require ',feature))
-  :documentation "Eagerly require FEATURE."
+  :documentation "Eagerly require FEATURE.
+This macro can be used as HEAD, and it will replace itself with
+the first FEATURE."
   :repeatable t
   :shorthand #'cadr)
 
