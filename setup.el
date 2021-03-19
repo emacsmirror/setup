@@ -288,7 +288,7 @@ the first FEATURE."
     `(define-key (symbol-value setup-map)
        ,(if (or (symbolp key) (stringp key))
               `(kbd ,key)
-          ,key)
+          key)
        nil))
   :documentation "Unbind KEY in current map."
   :after-loaded t
