@@ -350,8 +350,9 @@ form (prepend VAR), VAL is prepended to VAR."
 
 (setup-define :hide-mode
   (lambda ()
-    `(delq (assq setup-mode minor-mode-alist)
-           minor-mode-alist))
+    `(setq minor-mode-alist
+           (delq (assq setup-mode minor-mode-alist)
+                 minor-mode-alist)))
   :documentation "Hide the mode-line lighter of the current mode."
   :after-loaded t)
 
