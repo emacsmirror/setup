@@ -31,8 +31,9 @@ will be replaced with the functional equivalent of
 
 (unless (package-install-p 'paredit)
   (package-install 'paredit))
-(delq (assq 'paredit-mode minor-mode-alist)
-      minor-mode-alist)
+(setq minor-mode-alist
+      (delq (assq 'paredit-mode minor-mode-alist)
+            minor-mode-alist))
 (add-hook 'scheme-mode-hook #'paredit-mode)
 (add-hook 'lisp-mode-hook #'paredit-mode)
 
