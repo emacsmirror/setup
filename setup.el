@@ -338,13 +338,20 @@ the first FEATURE."
                             (funcall (or (get ',name 'custom-get)
                                          #'symbol-value)
                                      ',name))))
+          ((eq (car-safe name) 'remove)
+           (setq name (cadr name)
+                 val `(remove ,val
+                              (funcall (or (get ',name 'custom-get)
+                                           #'symbol-value)
+                                       ',name))))
           ((error "Invalid option %S" name)))
     `(customize-set-variable ',name ,val "Modified by `setup'"))
   :documentation "Set the option NAME to VAL.
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
 will use the car value to modify the behaviour.  If NAME has the
 form (append VAR), VAL is appended to VAR.  If NAME has the
-form (prepend VAR), VAL is prepended to VAR."
+form (prepend VAR), VAL is prepended to VAR.  If NAME has the
+form (remove VAR), VAL is removed from VAR."
   :debug '(sexp form)
   :repeatable t)
 
@@ -365,13 +372,17 @@ form (prepend VAR), VAL is prepended to VAR."
           ((eq (car-safe name) 'prepend)
            (setq name (cadr name)
                  val `(cons ,val ,name)))
+          ((eq (car-safe name) 'remove)
+           (setq name (cadr name)
+                 val `(remove ,val ,name)))
           ((error "Invalid variable %S" name)))
     `(add-hook setup-hook (lambda () (setq-local ,name ,val))))
   :documentation "Set the value of NAME to VAL in buffers of the current mode.
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
 will use the car value to modify the behaviour.  If NAME has the
 form (append VAR), VAL is appended to VAR.  If NAME has the
-form (prepend VAR), VAL is prepended to VAR."
+form (prepend VAR), VAL is prepended to VAR.  If NAME has the
+form (remove VAR), VAL is removed from VAR."
   :debug '(sexp form)
   :repeatable t)
 
