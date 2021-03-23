@@ -1,7 +1,7 @@
 `setup.el`
 ==========
 
-The `setup' macro simplifies repetitive configuration patterns.  For
+The `setup` macro simplifies repetitive configuration patterns.  For
 example, these macros:
 
 ~~~elisp
