@@ -277,7 +277,7 @@ the first FEATURE."
     `(define-key (eval setup-map)
        ,(if (or (symbolp key) (stringp key))
             `(kbd ,key)
-          ,key)
+          key)
        #',command))
   :documentation "Bind KEY to COMMAND in current map."
   :after-loaded t
@@ -304,7 +304,7 @@ the first FEATURE."
        (define-key (eval setup-map)
          ,(if (or (symbolp key) (stringp key))
               `(kbd ,key)
-            ,key)
+            key)
          #',command)))
   :documentation "Unbind the current key for COMMAND, and bind it to KEY."
   :after-loaded t
