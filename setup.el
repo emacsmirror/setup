@@ -419,6 +419,26 @@ See `advice-add' for more details."
   :documentation "If EXECUTABLE is not in the path, stop here."
   :repeatable 1)
 
+(setup-define :if-package
+  (lambda (package)
+    `(unless (package-installed-p ',package)
+       (throw 'setup-exit nil)))
+  :documentation "If package is not installed, stop evaluating the body.
+This macro can be used as HEAD, and it will replace itself with
+the first PACKAGE."
+  :repeatable t
+  :shorthand #'cadr)
+
+(setup-define :if-feature
+  (lambda (feature)
+    `(unless (featurep ',feature)
+       (throw 'setup-exit nil)))
+  :documentation "If FEATURE is not available, stop evaluating the body.
+This macro can be used as HEAD, and it will replace itself with
+the first PACKAGE."
+  :repeatable t
+  :shorthand #'cadr)
+
 (setup-define :only-if
   (lambda (condition)
     `(unless ,condition
