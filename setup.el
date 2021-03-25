@@ -205,12 +205,14 @@ If not given, it is assumed nothing is evaluated."
 
 (setup-define :with-feature
   (lambda (feature &rest body)
-    `(let ((setup-name ',feature))
-       (ignore setup-name)
-       (:with-mode ,(if (string-match-p "-mode\\'" (symbol-name feature))
-                        feature
-                      (intern (format "%s-mode" feature)))
-         ,@body)))
+    (if feature
+        `(let ((setup-name ',feature))
+           (ignore setup-name)
+           (:with-mode ,(if (string-match-p "-mode\\'" (symbol-name feature))
+                            feature
+                          (intern (format "%s-mode" feature)))
+             ,@body))
+      `(progn ,@body)))
   :documentation "Change the FEATURE that BODY is configuring."
   :debug '(sexp setup)
   :indent 1)
