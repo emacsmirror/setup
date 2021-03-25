@@ -275,7 +275,7 @@ the first FEATURE."
 
 (setup-define :bind
   (lambda (key command)
-    `(define-key (eval setup-map)
+    `(define-key (symbol-value setup-map)
        ,(if (or (symbolp key) (stringp key))
             `(kbd ,key)
           key)
@@ -300,9 +300,9 @@ the first FEATURE."
 (setup-define :rebind
   (lambda (key command)
     `(progn
-       (dolist (key (where-is-internal ',command (eval setup-map)))
-         (define-key (eval setup-map) key nil))
-       (define-key (eval setup-map)
+       (dolist (key (where-is-internal ',command (symbol-value setup-map)))
+         (define-key (symbol-value setup-map) key nil))
+       (define-key (symbol-value setup-map)
          ,(if (or (symbolp key) (stringp key))
               `(kbd ,key)
             key)
