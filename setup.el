@@ -107,10 +107,9 @@ NAME may also be a macro, if it can provide a symbol."
   (declare (debug (&rest &or [symbolp sexp] form))
            (indent defun))
   (when (consp name)
+    (push name body)
     (let ((shorthand (get (car name) 'setup-shorthand)))
-      (when shorthand
-        (push name body)
-        (setq name (funcall shorthand name)))))
+      (setq name (and shorthand (funcall shorthand name)))))
   (macroexpand-all
    `(catch 'setup-exit
       (:with-feature ,name ,@body)
