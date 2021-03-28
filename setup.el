@@ -340,12 +340,6 @@ the first FEATURE."
                             (funcall (or (get ',name 'custom-get)
                                          #'symbol-value)
                                      ',name))))
-          ((eq (car-safe name) 'remove)
-           (setq name (cadr name)
-                 val `(remove ,val
-                              (funcall (or (get ',name 'custom-get)
-                                           #'symbol-value)
-                                       ',name))))
           ((error "Invalid option %S" name)))
     `(customize-set-variable ',name ,val "Modified by `setup'"))
   :documentation "Set the option NAME to VAL.
