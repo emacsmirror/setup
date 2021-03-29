@@ -266,7 +266,9 @@ the first FEATURE."
 (setup-define :global
   (lambda (key command)
     `(global-set-key
-      ,(if (stringp key) (kbd key) key)
+      ,(cond ((stringp key) (kbd key))
+             ((symbolp key) `(kbd ,key))
+             (t key))
       #',command))
   :documentation "Globally bind KEY to COMMAND."
   :debug '(form sexp)
@@ -275,7 +277,9 @@ the first FEATURE."
 (setup-define :bind
   (lambda (key command)
     `(define-key (symbol-value setup-map)
-       ,(if (stringp key) (kbd key) key)
+       ,(cond ((stringp key) (kbd key))
+              ((symbolp key) `(kbd ,key))
+              (t key))
        #',command))
   :documentation "Bind KEY to COMMAND in current map."
   :after-loaded t
@@ -285,7 +289,9 @@ the first FEATURE."
 (setup-define :unbind
   (lambda (key)
     `(define-key (symbol-value setup-map)
-       ,(if (stringp key) (kbd key) key)
+       ,(cond ((stringp key) (kbd key))
+              ((symbolp key) `(kbd ,key))
+              (t key))
        nil))
   :documentation "Unbind KEY in current map."
   :after-loaded t
@@ -298,7 +304,9 @@ the first FEATURE."
        (dolist (key (where-is-internal ',command (symbol-value setup-map)))
          (define-key (symbol-value setup-map) key nil))
        (define-key (symbol-value setup-map)
-         ,(if (stringp key) (kbd key) key)
+         ,(cond ((stringp key) (kbd key))
+                ((symbolp key) `(kbd ,key))
+                (t key))
          #',command)))
   :documentation "Unbind the current key for COMMAND, and bind it to KEY."
   :after-loaded t
