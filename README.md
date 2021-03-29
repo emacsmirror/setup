@@ -7,8 +7,8 @@ example, these macros:
 ~~~elisp
 (setup shell
   (let ((key "C-c s"))
-    (:global (key shell))
-    (:bind (key bury-buffer))))
+    (:global key shell)
+    (:bind key bury-buffer)))
 
 (setup (:package paredit)
   (:hide-mode)
@@ -18,7 +18,7 @@ example, these macros:
   (:with-mode yas-minor-mode
     (:rebind "<backtab>" yas-expand)
     (:option yas-prompt-functions '(yas-completing-prompt)
-	     yas-wrap-around-region t)
+             yas-wrap-around-region t)
     (:hook-into prog-mode)))
 ~~~
 
@@ -27,7 +27,7 @@ will be replaced with the functional equivalent of
 ~~~elisp
 (global-set-key (kbd "C-c s") #'shell)
 (with-eval-after-load 'shell
-   (define-key shell-mode-map (kbd "C-c s") #'bury-buffer))
+  (define-key shell-mode-map (kbd "C-c s") #'bury-buffer))
 
 (unless (package-install-p 'paredit)
   (package-install 'paredit))
@@ -42,9 +42,9 @@ will be replaced with the functional equivalent of
 (with-eval-after-load 'yasnippet
   (dolist (key (where-is-internal 'yas-expand yas-minor-mode-map))
     (define-key yas-minor-mode-map key nil))
-  (define-key yas-minor-mode-map "<backtab>" #'yas-expand)
+  (define-key yas-minor-mode-map (kbd "<backtab>") #'yas-expand))
 (customize-set-variable 'yas-prompt-functions '(yas-completing-prompt))
-(customize-set-variable 'yas-wrap-around-region t))
+(customize-set-variable 'yas-wrap-around-region t)
 (add-hook 'prog-mode-hook #'yas-minor-mode)
 ~~~
 
