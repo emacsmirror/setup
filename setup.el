@@ -346,10 +346,15 @@ the first FEATURE."
     `(customize-set-variable ',name ,val "Modified by `setup'"))
   :documentation "Set the option NAME to VAL.
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
-will use the car value to modify the behaviour.  If NAME has the
-form (append VAR), VAL is appended to VAR.  If NAME has the
-form (prepend VAR), VAL is prepended to VAR.  If NAME has the
-form (remove VAR), VAL is removed from VAR."
+will use the car value to modify the behaviour.  These forms are
+supported:
+
+(append VAR)    Assuming VAR designates a list, add VAL as its last
+                element, unless it is already member of the list.
+
+(prepend VAR)   Assuming VAR designates a list, add VAL to the
+                beginning, unless it is already member of the
+                list."
   :debug '(sexp form)
   :repeatable t)
 
@@ -385,10 +390,18 @@ form (remove VAR), VAL is removed from VAR."
     `(add-hook setup-hook (lambda () (setq-local ,name ,val))))
   :documentation "Set the value of NAME to VAL in buffers of the current mode.
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
-will use the car value to modify the behaviour.  If NAME has the
-form (append VAR), VAL is appended to VAR.  If NAME has the
-form (prepend VAR), VAL is prepended to VAR.  If NAME has the
-form (remove VAR), VAL is removed from VAR."
+will use the car value to modify the behaviour. These forms are
+supported:
+
+(append VAR)    Assuming VAR designates a list, add VAL as its last
+                element, unless it is already member of the list.
+
+(prepend VAR)   Assuming VAR designates a list, add VAL to the
+                beginning, unless it is already member of the
+                list.
+
+(remove VAR)    Assuming VAR designates a list, remove all instances
+                of VAL."
   :debug '(sexp form)
   :repeatable t)
 
