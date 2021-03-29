@@ -345,6 +345,12 @@ the first FEATURE."
                                 list
                               (cons ,sym list))))
                    load-p t))
+            ((eq (car-safe name) 'remove)
+             (setq name (cadr name)
+                   val `(remove ,name (funcall (or (get ',name 'custom-get)
+                                                   #'symbol-value)
+                                               ',name))
+                   load-p t))
             ((error "Invalid option %S" name)))
       (macroexp-progn
        (append (and load-p `((custom-load-symbol ',name)))
@@ -359,7 +365,10 @@ supported:
 
 (prepend VAR)   Assuming VAR designates a list, add VAL to the
                 beginning, unless it is already member of the
-                list."
+                list.
+
+(remove VAR)    Assuming VAR designates a list, remove all instances
+                of VAL."
   :debug '(sexp form)
   :repeatable t)
 
