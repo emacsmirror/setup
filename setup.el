@@ -321,29 +321,34 @@ the first FEATURE."
 
 (setup-define :option
   (lambda (name val)
-    (cond ((symbolp name) t)
-          ((eq (car-safe name) 'append)
-           (setq name (cadr name)
-                 val (let ((sym (gensym)))
-                       `(let ((,sym ,val)
-                              (list (funcall (or (get ',name 'custom-get)
-                                                 #'symbol-value)
-                                             ',name)))
-                          (if (member ,sym list)
-                              list
-                            (append list (list ,sym)))))))
-          ((eq (car-safe name) 'prepend)
-           (setq name (cadr name)
-                 val (let ((sym (gensym)))
-                       `(let ((,sym ,val)
-                              (list (funcall (or (get ',name 'custom-get)
-                                                 #'symbol-value)
-                                             ',name)))
-                          (if (member ,sym list)
-                              list
-                            (cons ,sym list))))))
-          ((error "Invalid option %S" name)))
-    `(customize-set-variable ',name ,val "Modified by `setup'"))
+    (let (load-p)
+      (cond ((symbolp name) t)
+            ((eq (car-safe name) 'append)
+             (setq name (cadr name)
+                   val (let ((sym (gensym)))
+                         `(let ((,sym ,val)
+                                (list (funcall (or (get ',name 'custom-get)
+                                                   #'symbol-value)
+                                               ',name)))
+                            (if (member ,sym list)
+                                list
+                              (append list (list ,sym)))))
+                   load-p t))
+            ((eq (car-safe name) 'prepend)
+             (setq name (cadr name)
+                   val (let ((sym (gensym)))
+                         `(let ((,sym ,val)
+                                (list (funcall (or (get ',name 'custom-get)
+                                                   #'symbol-value)
+                                               ',name)))
+                            (if (member ,sym list)
+                                list
+                              (cons ,sym list))))
+                   load-p t))
+            ((error "Invalid option %S" name)))
+      (macroexp-progn
+       (append (and load-p `((custom-load-symbol ',name)))
+               `((customize-set-variable ',name ,val "Modified by `setup'"))))))
   :documentation "Set the option NAME to VAL.
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
 will use the car value to modify the behaviour.  These forms are
