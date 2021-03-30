@@ -82,19 +82,21 @@ Do not modify this variable by hand.  Instead use
   "Return a docstring for `setup'."
   (with-temp-buffer
     (insert (documentation (symbol-function 'setup) 'raw)
-            "\n\n"
-            "Within BODY, `setup' provides these local macros:")
-    (dolist (sym (sort (mapcar #'car setup-macros) #'string-lessp))
-      (newline 2)
-      (let ((sig (mapcar
-                  (lambda (arg)
-                    (if (string-match "\\`&" (symbol-name arg))
-                        arg
-                      (intern (upcase (symbol-name arg)))))
-                  (get sym 'setup-signature))))
-        (insert (format " - %s\n\n" (cons sym sig))
-                (or (get sym 'setup-documentation)
-                    "No documentation."))))
+            "\n\n")
+    (if (null setup-macros)
+        (insert "No local macros are defined.")
+      (insert "Within BODY, `setup' provides these local macros:")
+      (dolist (sym (sort (mapcar #'car setup-macros) #'string-lessp))
+        (newline 2)
+        (let ((sig (mapcar
+                    (lambda (arg)
+                      (if (string-match "\\`&" (symbol-name arg))
+                          arg
+                        (intern (upcase (symbol-name arg)))))
+                    (get sym 'setup-signature))))
+          (insert (format " - %s\n\n" (cons sym sig))
+                  (or (get sym 'setup-documentation)
+                      "No documentation.")))))
     (buffer-string)))
 
 ;;;###autoload
