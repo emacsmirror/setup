@@ -378,7 +378,11 @@ supported:
                 list.
 
 (remove VAR)    Assuming VAR designates a list, remove all instances
-                of VAL."
+                of VAL.
+
+Note that if the value of an option is modified partially by
+append, prepend, remove, one should ensure that the default value
+has been loaded."
   :debug '(sexp form)
   :repeatable t)
 
