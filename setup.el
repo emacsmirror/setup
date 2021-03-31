@@ -363,7 +363,8 @@ the first FEATURE."
             ((error "Invalid option %S" name)))
       (macroexp-progn
        (append (and load-p `((custom-load-symbol ',name)))
-               `((customize-set-variable ',name ,val "Modified by `setup'"))))))
+               `((customize-set-variable ',name ,val "Modified by `setup'")
+                 (custom-push-theme 'theme-value ',name 'user 'reset))))))
   :documentation "Set the option NAME to VAL.
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
 will use the car value to modify the behaviour.  These forms are
