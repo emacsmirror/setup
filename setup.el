@@ -215,7 +215,9 @@ If not given, it is assumed nothing is evaluated."
                           (intern (format "%s-mode" feature)))
              ,@body))
       `(progn ,@body)))
-  :documentation "Change the FEATURE that BODY is configuring."
+  :documentation "Change the FEATURE that BODY is configuring.
+This macro also declares a current mode by appending \"-mode\" to
+FEATURE, unless it already ends with \"-mode\"."
   :debug '(sexp setup)
   :indent 1)
 
