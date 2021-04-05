@@ -381,7 +381,9 @@ supported:
 
 Note that if the value of an option is modified partially by
 append, prepend, remove, one should ensure that the default value
-has been loaded."
+has been loaded. Also keep in mind that user options customized
+with this macro are not added to the \"user\" theme, and will
+therefore not be stored in `custom-set-variables' blocks."
   :debug '(sexp form)
   :repeatable t)
 
