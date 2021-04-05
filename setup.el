@@ -361,8 +361,9 @@ the first FEATURE."
           ((error "Invalid option %S" name)))
     `(progn
        (custom-load-symbol ',name)
-       (customize-set-variable ',name ,val "Modified by `setup'")
-       (custom-push-theme 'theme-value ',name 'user 'reset)))
+       (funcall (or (get ',name 'custom-set) #'set-default)
+                ',name ,val)
+       (put ',name 'variable-comment "Modified by `setup'")))
   :documentation "Set the option NAME to VAL.
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
 will use the car value to modify the behaviour.  These forms are
