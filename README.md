@@ -6,7 +6,7 @@ example, these macros:
 
 ~~~elisp
 (setup shell
-  (let ((key "C-c s"))
+  (let ((key (kbd "C-c s")))
     (:global key shell)
     (:bind key bury-buffer)))
 
