@@ -497,6 +497,14 @@ the first PACKAGE."
   :debug '(form)
   :repeatable t)
 
+(setup-define :load-from
+  (lambda (path)
+    `(add-to-list 'load-path ,path))
+  :documentation "Add PATH to load path.
+This macro can be used as HEAD, and it will replace itself with
+the nondirectory part of PATH."
+  :shorthand (lambda (path) (intern (file-name-nondirectory path))))
+
 (setup-define :when-loaded
   (lambda (&rest body) `(progn ,@body))
   :documentation "Evaluate BODY after the current feature has been loaded.
