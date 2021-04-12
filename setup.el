@@ -325,7 +325,10 @@ the first FEATURE."
 
 (setup-define :hook-into
   (lambda (mode)
-    `(add-hook ',(intern (concat (symbol-name mode) "-hook"))
+    `(add-hook ',(let ((name (symbol-name mode)))
+                   (if (string-match-p "-hook\\'" name)
+                       mode
+                     (intern (concat name "-hook"))))
                setup-mode))
   :documentation "Add current mode to HOOK."
   :repeatable t)
