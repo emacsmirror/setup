@@ -13,7 +13,7 @@ example, these macros:
 (setup dired
   (:also-load dired-x)
   (:option (prepend dired-guess-shell-alist-user) '("" "xdg-open")
-           dired-dwim-target t")
+           dired-dwim-target t)
   (:hook auto-revert-mode))
 
 (setup (:package paredit)
