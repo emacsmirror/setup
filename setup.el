@@ -502,6 +502,13 @@ This macro can be used as HEAD, and it will replace itself with
 the nondirectory part of PATH."
   :shorthand (lambda (path) (intern (file-name-nondirectory path))))
 
+(setup-define :file-match
+  (lambda (pat)
+    `(add-to-list 'auto-mode-alist (cons ,pat setup-mode)))
+  :documentation "Associate the current mode with files that match PAT."
+  :debug '(form)
+  :repeatable t)
+
 (setup-define :when-loaded
   (lambda (&rest body) `(progn ,@body))
   :documentation "Evaluate BODY after the current feature has been loaded.
