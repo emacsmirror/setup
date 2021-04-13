@@ -496,7 +496,7 @@ the first PACKAGE."
 
 (setup-define :load-from
   (lambda (path)
-    `(add-to-list 'load-path ,path))
+    `(add-to-list 'load-path (expand-file-name ,path)))
   :documentation "Add PATH to load path.
 This macro can be used as HEAD, and it will replace itself with
 the nondirectory part of PATH."
