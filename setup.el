@@ -500,7 +500,7 @@ the first PACKAGE."
   :documentation "Add PATH to load path.
 This macro can be used as HEAD, and it will replace itself with
 the nondirectory part of PATH."
-  :shorthand (lambda (path) (intern (file-name-nondirectory path))))
+  :shorthand (lambda (args) (intern (file-name-nondirectory (cadr args)))))
 
 (setup-define :file-match
   (lambda (pat)
