@@ -111,9 +111,11 @@ NAME may also be a macro, if it can provide a symbol."
     (let ((shorthand (get (car name) 'setup-shorthand)))
       (setq name (and shorthand (funcall shorthand name)))))
   (macroexpand-all
-   `(catch 'setup-exit
-      (:with-feature ,name ,@body)
-      t)
+   (if (assq :with-feature setup-macros)
+       `(catch 'setup-exit
+          (:with-feature ,name ,@body)
+          t)
+     `(catch 'setup-exit ,(macroexp-progn body) t))
    (append setup-macros macroexpand-all-environment)))
 
 ;;;###autoload
