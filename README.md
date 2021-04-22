@@ -71,11 +71,10 @@ require a [copyright assignment][ca] to the FSF.
 Copying
 -------
 
-`setup.el` is distributed under the [CC0 1.0 Universal (CC0 1.0)
-Public Domain Dedication][cc0] license. 
+`setup.el` is distributed under the [GPL v3][gpl3] license.
 
 [elpa]: http://elpa.gnu.org/packages/setup.html
 [mail]: https://lists.sr.ht/~zge/public-inbox
 [github]: https://github.com/phikal/setup.el
 [ca]: https://www.gnu.org/software/emacs/manual/html_node/emacs/Copyright-Assignment.html#Copyright-Assignment
-[cc0]: https://creativecommons.org/publicdomain/zero/1.0/deed
+[gpl3]: https://www.gnu.org/licenses/gpl-3.0.en.html
