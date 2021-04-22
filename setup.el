@@ -498,10 +498,13 @@ the first PACKAGE."
 
 (setup-define :load-from
   (lambda (path)
-    `(add-to-list 'load-path (expand-file-name ,path)))
+    `(if (file-exists-p ,path)
+         (add-to-list 'load-path (expand-file-name ,path))
+       (throw 'setup-exit t)))
   :documentation "Add PATH to load path.
 This macro can be used as HEAD, and it will replace itself with
-the nondirectory part of PATH."
+the nondirectory part of PATH.
+If PATH does not exist, abort the evaluation."
   :shorthand (lambda (args) (intern (file-name-nondirectory (cadr args)))))
 
 (setup-define :file-match
