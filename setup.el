@@ -127,10 +127,6 @@ NAME may also be a macro, if it can provide a symbol."
   "Define `setup'-local macro NAME using function FN.
 The plist OPTS may contain the key-value pairs:
 
-  :name NAME
-Specify a function to use, for extracting the feature name of a
-NAME entry, if it is the first element in a setup macro.
-
   :indent SPEC
 Change indentation behaviour.  See symbol `lisp-indent-function'.
 
