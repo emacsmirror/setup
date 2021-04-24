@@ -199,6 +199,12 @@ If not given, it is assumed nothing is evaluated."
                  (cons '&rest spec))
                 (t spec)))))
 
+(add-to-list 'elisp-xref-find-def-functions
+             (defun setup-xref-def-function (symbol)
+               "Return an elisp xref location for SYMBOL."
+               (require 'elisp-mode)
+               (list (elisp--xref-make-xref nil symbol "setup"))))
+
 
 ;;; definitions of `setup' keywords
 
