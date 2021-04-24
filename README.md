@@ -1,8 +1,10 @@
 `setup.el`
 ==========
 
-The `setup` macro simplifies repetitive configuration patterns.  For
-example, these macros:
+The `setup` macro simplifies repetitive configuration patterns, by
+providing context-sensitive local macros in `setup` bodies.
+
+For example, these macros:
 
 ~~~elisp
 (setup shell
