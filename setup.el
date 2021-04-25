@@ -71,6 +71,8 @@
 
 ;;; Code:
 
+(require 'elisp-mode)
+
 (defvar setup-macros nil
   "Local macro definitions to be bound in `setup' bodies.
 Do not modify this variable by hand.  Instead use
@@ -199,11 +201,13 @@ If not given, it is assumed nothing is evaluated."
                  (cons '&rest spec))
                 (t spec)))))
 
+(defun setup-xref-def-function (symbol)
+  "Return an elisp xref location for SYMBOL."
+  (and (assq symbol setup-macros)
+       (list (elisp--xref-make-xref nil symbol "setup"))))
+
 (add-to-list 'elisp-xref-find-def-functions
-             (defun setup-xref-def-function (symbol)
-               "Return an elisp xref location for SYMBOL."
-               (require 'elisp-mode)
-               (list (elisp--xref-make-xref nil symbol "setup"))))
+             #'setup-xref-def-function)
 
 
 ;;; definitions of `setup' keywords
