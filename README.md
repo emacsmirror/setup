@@ -117,9 +117,13 @@ Tips
 Bugs
 ----
 
-Bugs or comments can be submitted to my [public inbox][mail] or via
-the [GitHub mirror][github].  Note that non-trivial contributions
-require a [copyright assignment][ca] to the FSF.
+Bugs or patches can be submitted to my [public inbox][mail] or via the
+[GitHub mirror][github].  Note that non-trivial contributions require
+a [copyright assignment][ca] to the FSF.
+
+This package is still young, so wishes, impressions and criticism are
+very appreciated. If you have anything to say, feel free to send an
+email to the aforementioned [public inbox][mail].
 
 Copying
 -------
