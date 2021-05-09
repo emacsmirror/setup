@@ -169,6 +169,7 @@ If not given, it is assumed nothing is evaluated."
            (append (help-function-arglist fn 'preserve-names)
                    (if (plist-get opts :repeatable) '(...)))))
   (put name 'setup-shorthand (plist-get opts :shorthand))
+  (put name 'setup-definition-file (or load-file-name buffer-file-name))
   (put name 'lisp-indent-function (plist-get opts :indent))
   ;; define macro for `macroexpand-all'
   (setf (alist-get name setup-macros)   ;New in Emacs-25.
@@ -204,7 +205,8 @@ If not given, it is assumed nothing is evaluated."
 (defun setup-xref-def-function (symbol)
   "Return an elisp xref location for SYMBOL."
   (and (assq symbol setup-macros)
-       (list (elisp--xref-make-xref nil symbol "setup"))))
+       (let ((file (get symbol 'setup-definition-file)))
+         (list (elisp--xref-make-xref nil symbol file)))))
 
 (add-to-list 'elisp-xref-find-def-functions
              #'setup-xref-def-function)
