@@ -498,6 +498,12 @@ the first PACKAGE."
   :repeatable t
   :shorthand #'cadr)
 
+(setup-define :if-host
+  (lambda (hostname)
+    `(unless (string= (system-name) ,hostname)
+       (throw 'setup-exit nil)))
+  :documentation "If HOSTNAME is not the current hostname, stop evaluating form.")
+
 (setup-define :only-if
   (lambda (condition)
     `(unless ,condition
