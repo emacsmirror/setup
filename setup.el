@@ -521,7 +521,9 @@ the first PACKAGE."
 This macro can be used as HEAD, and it will replace itself with
 the nondirectory part of PATH.
 If PATH does not exist, abort the evaluation."
-  :shorthand (lambda (args) (intern (file-name-nondirectory (cadr args)))))
+  :shorthand (lambda (args) (intern
+                             (file-name-nondirectory
+                              (directory-file-name (cadr args))))))
 
 (setup-define :file-match
   (lambda (pat)
