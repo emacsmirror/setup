@@ -498,6 +498,16 @@ the first PACKAGE."
   :repeatable t
   :shorthand #'cadr)
 
+(setup-define :if-require
+  (lambda (feature)
+    `(unless (require ',feature nil t)
+       (throw 'setup-exit nil)))
+  :documentation "If FEATURE cannot be required, stop evaluating the body.
+This macro can be used as HEAD, and it will replace itself with
+the first PACKAGE."
+  :repeatable t
+  :shorthand #'cadr)
+
 (setup-define :if-host
   (lambda (hostname)
     `(unless (string= (system-name) ,hostname)
