@@ -269,8 +269,9 @@ the first PACKAGE."
 
 (setup-define :require
   (lambda (feature)
-    `(require ',feature))
-  :documentation "Eagerly require FEATURE.
+    `(unless (require ',feature nil t)
+       (throw 'setup-exit nil)))
+  :documentation "Try to require FEATURE, or stop evaluating body.
 This macro can be used as HEAD, and it will replace itself with
 the first FEATURE."
   :repeatable t
@@ -493,16 +494,6 @@ the first PACKAGE."
     `(unless (featurep ',feature)
        (throw 'setup-exit nil)))
   :documentation "If FEATURE is not available, stop evaluating the body.
-This macro can be used as HEAD, and it will replace itself with
-the first PACKAGE."
-  :repeatable t
-  :shorthand #'cadr)
-
-(setup-define :if-require
-  (lambda (feature)
-    `(unless (require ',feature nil t)
-       (throw 'setup-exit nil)))
-  :documentation "If FEATURE cannot be required, stop evaluating the body.
 This macro can be used as HEAD, and it will replace itself with
 the first PACKAGE."
   :repeatable t
