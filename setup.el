@@ -539,7 +539,7 @@ If PATH does not exist, abort the evaluation."
 Avoid using this macro whenever possible, and
 instead choose a more specialized alternative or write one
 yourself."
-  :debug '(body)
+  :debug '(setup)
   :after-loaded t)
 
 (provide 'setup)
