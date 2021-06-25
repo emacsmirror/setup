@@ -215,45 +215,65 @@ If not given, it is assumed nothing is evaluated."
 ;;; definitions of `setup' keywords
 
 (setup-define :with-feature
-  (lambda (feature &rest body)
-    (if feature
-        `(let ((setup-name ',feature))
-           (ignore setup-name)
-           (:with-mode ,(if (string-match-p "-mode\\'" (symbol-name feature))
-                            feature
-                          (intern (format "%s-mode" feature)))
-             ,@body))
-      (macroexp-progn body)))
+  (lambda (features &rest body)
+    (let (bodies)
+      (dolist (feature (if (listp features) features (list features)))
+        (push (if feature
+                  `(let ((setup-name ',feature))
+                     (ignore setup-name)
+                     (:with-mode ,(if (string-match-p "-mode\\'" (symbol-name feature))
+                                      feature
+                                    (intern (format "%s-mode" feature)))
+                       ,@body))
+                (macroexp-progn body))
+              bodies))
+      (macroexp-progn (nreverse bodies))))
   :documentation "Change the FEATURE that BODY is configuring.
 This macro also declares a current mode by appending \"-mode\" to
-FEATURE, unless it already ends with \"-mode\"."
+FEATURE, unless it already ends with \"-mode\".
+If FEATURE is a list, apply BODY to all elements of FEATURE."
   :debug '(sexp setup)
   :indent 1)
 
 (setup-define :with-mode
-  (lambda (mode &rest body)
-    `(let ((setup-mode ',mode)
-           (setup-map ',(intern (format "%s-map" mode)))
-           (setup-hook ',(intern (format "%s-hook" mode))))
-       (ignore setup-mode setup-map setup-hook)
-       ,@body))
-  :documentation "Change the MODE that BODY is configuring."
+  (lambda (modes &rest body)
+    (let (bodies)
+      (dolist (mode (if (listp modes) modes (list modes)))
+        (push `(let ((setup-mode ',mode)
+                     (setup-map ',(intern (format "%s-map" mode)))
+                     (setup-hook ',(intern (format "%s-hook" mode))))
+                 (ignore setup-mode setup-map setup-hook)
+                 ,@body)
+              bodies))
+      (macroexp-progn (nreverse bodies))))
+  :documentation "Change the MODE that BODY is configuring.
+If MODE is a list, apply BODY to all elements of MODE."
   :debug '(sexp setup)
   :indent 1)
 
 (setup-define :with-map
-  (lambda (map &rest body)
-    `(let ((setup-map ',map))
-       ,@body))
-  :documentation "Change the MAP that BODY will bind to"
+  (lambda (maps &rest body)
+    (let (bodies)
+      (dolist (map (if (listp maps) maps (list maps)))
+        (push `(let ((setup-map ',map))
+                 ,@body)
+              bodies))
+      (macroexp-progn (nreverse bodies))))
+  :documentation "Change the MAP that BODY will bind to.
+If MAP is a list, apply BODY to all elements of MAP."
   :debug '(sexp setup)
   :indent 1)
 
 (setup-define :with-hook
-  (lambda (hook &rest body)
-    `(let ((setup-hook ',hook))
-       ,@body))
-  :documentation "Change the HOOK that BODY will use."
+  (lambda (hooks &rest body)
+    (let (bodies)
+      (dolist (hook (if (listp hooks) hooks (list hooks)))
+        (push `(let ((setup-hook ',hook))
+                 ,@body)
+              bodies))
+      (macroexp-progn (nreverse bodies))))
+  :documentation "Change the HOOK that BODY will use.
+If HOOK is a list, apply BODY to all elements of HOOK."
   :debug '(sexp setup)
   :indent 1)
 
