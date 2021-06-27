@@ -227,7 +227,7 @@ If not given, it is assumed nothing is evaluated."
                        ,@body))
                 (macroexp-progn body))
               bodies))
-      (macroexp-progn (nreverse bodies))))
+      (macroexp-progn (if features (nreverse bodies) body))))
   :documentation "Change the FEATURE that BODY is configuring.
 This macro also declares a current mode by appending \"-mode\" to
 FEATURE, unless it already ends with \"-mode\".
