@@ -131,7 +131,7 @@ Copying
 `setup.el` is distributed under the [GPL v3][gpl3] license.
 
 [elpa]: http://elpa.gnu.org/packages/setup.html
-[mail]: https://lists.sr.ht/~zge/public-inbox
+[mail]: https://lists.sr.ht/~pkal/public-inbox
 [github]: https://github.com/phikal/setup.el
 [ca]: https://www.gnu.org/software/emacs/manual/html_node/emacs/Copyright-Assignment.html#Copyright-Assignment
 [gpl3]: https://www.gnu.org/licenses/gpl-3.0.en.html
