@@ -415,8 +415,7 @@ the first FEATURE."
     `(progn
        (custom-load-symbol ',name)
        (funcall (or (get ',name 'custom-set) #'set-default)
-                ',name ,val)
-       (put ',name 'variable-comment "Modified by `setup'")))
+                ',name ,val)))
   :documentation "Set the option NAME to VAL.
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
 will use the car value to modify the behaviour.  These forms are
