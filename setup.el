@@ -556,7 +556,7 @@ the first PACKAGE."
   (lambda (path)
     `(if (file-exists-p ,path)
          (add-to-list 'load-path (expand-file-name ,path))
-       (throw 'setup-exit t)))
+       (throw 'setup-exit nil)))
   :documentation "Add PATH to load path.
 This macro can be used as HEAD, and it will replace itself with
 the nondirectory part of PATH.
