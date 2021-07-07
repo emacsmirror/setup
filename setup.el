@@ -7,7 +7,7 @@
 ;; Version: 0.2.1
 ;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: lisp, local
-;; URL: https://git.sr.ht/~zge/setup
+;; URL: https://git.sr.ht/~pkal/setup
 
 ;; This package is Free Software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
