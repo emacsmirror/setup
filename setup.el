@@ -212,6 +212,55 @@ If not given, it is assumed nothing is evaluated."
              #'setup-xref-def-function)
 
 
+;;; common utility functions for keywords
+
+(defun setup--ensure-kbd (sexp)
+  "Attempt to return SEXP as a key binding expression."
+  (cond ((stringp sexp) (kbd sexp))
+        ((symbolp sexp) `(kbd ,sexp))
+        (sexp)))
+
+(defun setup--ensure-function (sexp)
+  "Attempt to return SEXP as a quoted function name."
+  (cond ((eq (car-safe sexp) 'function)
+         sexp)
+        ((eq (car-safe sexp) 'quote)
+         `#',(cadr sexp))
+        ((symbolp sexp)
+         `#',sexp)
+        (sexp)))
+
+(defun setup--make-setter (name val old-val-fn wrap-fn)
+  "Convert NAME and VAL into setter code.
+The function OLD-VAL-FN is used to extract the old value of
+VAL.  The function WRAP-FN combines the transformed values of NAME
+and VAL into one s-expression."
+  (cond ((symbolp name) (funcall wrap-fn name val))
+        ((eq (car-safe name) 'append)
+         (funcall wrap-fn
+          (cadr name)
+          (let ((sym (gensym)))
+            `(let ((,sym ,val)
+                   (list ,(funcall old-val-fn name)))
+               (if (member ,sym list)
+                   list
+                 (append list (list ,sym)))))))
+        ((eq (car-safe name) 'prepend)
+         (funcall wrap-fn
+          (cadr name)
+          (let ((sym (gensym)))
+            `(let ((,sym ,val)
+                   (list ,(funcall old-val-fn name)))
+               (if (member ,sym list)
+                   list
+                 (cons ,sym list))))))
+        ((eq (car-safe name) 'remove)
+         (funcall wrap-fn
+          (cadr name)
+          `(remove ,val ,(funcall old-val-fn name))))
+        ((error "Invalid option %S" name))))
+
+
 ;;; definitions of `setup' keywords
 
 (setup-define :with-feature
@@ -302,16 +351,8 @@ the first FEATURE."
 (setup-define :global
   (lambda (key command)
     `(global-set-key
-      ,(cond ((stringp key) (kbd key))
-             ((symbolp key) `(kbd ,key))
-             (t key))
-      ,(cond ((eq (car-safe command) 'function)
-              command)
-             ((eq (car-safe command) 'quote)
-              `#',(cadr command))
-             ((symbolp 'quote)
-              `#',command)
-             (command))))
+      ,(setup--ensure-kbd key)
+      ,(setup--ensure-function command)))
   :documentation "Globally bind KEY to COMMAND."
   :debug '(form sexp)
   :repeatable t)
@@ -319,16 +360,8 @@ the first FEATURE."
 (setup-define :bind
   (lambda (key command)
     `(define-key (symbol-value setup-map)
-       ,(cond ((stringp key) (kbd key))
-              ((symbolp key) `(kbd ,key))
-              (t key))
-       ,(cond ((eq (car-safe command) 'function)
-                 command)
-                ((eq (car-safe command) 'quote)
-                 `#',(cadr command))
-                ((symbolp 'quote)
-                 `#',command)
-                (command))))
+       ,(setup--ensure-kbd key)
+       ,(setup--ensure-function command)))
   :documentation "Bind KEY to COMMAND in current map."
   :after-loaded t
   :debug '(form sexp)
@@ -337,9 +370,7 @@ the first FEATURE."
 (setup-define :unbind
   (lambda (key)
     `(define-key (symbol-value setup-map)
-       ,(cond ((stringp key) (kbd key))
-              ((symbolp key) `(kbd ,key))
-              (t key))
+       ,(setup--ensure-kbd key)
        nil))
   :documentation "Unbind KEY in current map."
   :after-loaded t
@@ -352,16 +383,8 @@ the first FEATURE."
        (dolist (key (where-is-internal ',command (symbol-value setup-map)))
          (define-key (symbol-value setup-map) key nil))
        (define-key (symbol-value setup-map)
-         ,(cond ((stringp key) (kbd key))
-                ((symbolp key) `(kbd ,key))
-                (t key))
-         ,(cond ((eq (car-safe command) 'function)
-                 command)
-                ((eq (car-safe command) 'quote)
-                 `#',(cadr command))
-                ((symbolp 'quote)
-                 `#',command)
-                (command)))))
+         ,(setup--ensure-kbd key)
+         ,(setup--ensure-function command))))
   :documentation "Unbind the current key for COMMAND, and bind it to KEY."
   :after-loaded t
   :debug '(form sexp)
@@ -369,7 +392,7 @@ the first FEATURE."
 
 (setup-define :hook
   (lambda (function)
-    `(add-hook setup-hook #',function))
+    `(add-hook setup-hook ,(setup--ensure-function function)))
   :documentation "Add FUNCTION to current hook."
   :repeatable t)
 
@@ -385,37 +408,17 @@ the first FEATURE."
 
 (setup-define :option
   (lambda (name val)
-    (cond ((symbolp name) t)
-          ((eq (car-safe name) 'append)
-           (setq name (cadr name)
-                 val (let ((sym (gensym)))
-                       `(let ((,sym ,val)
-                              (list (funcall (or (get ',name 'custom-get)
-                                                 #'symbol-value)
-                                             ',name)))
-                          (if (member ,sym list)
-                              list
-                            (append list (list ,sym)))))))
-          ((eq (car-safe name) 'prepend)
-           (setq name (cadr name)
-                 val (let ((sym (gensym)))
-                       `(let ((,sym ,val)
-                              (list (funcall (or (get ',name 'custom-get)
-                                                 #'symbol-value)
-                                             ',name)))
-                          (if (member ,sym list)
-                              list
-                            (cons ,sym list))))))
-          ((eq (car-safe name) 'remove)
-           (setq name (cadr name)
-                 val `(remove ,name (funcall (or (get ',name 'custom-get)
-                                                 #'symbol-value)
-                                             ',name))))
-          ((error "Invalid option %S" name)))
-    `(progn
-       (custom-load-symbol ',name)
-       (funcall (or (get ',name 'custom-set) #'set-default)
-                ',name ,val)))
+    (setup--make-setter
+     name val
+     (lambda (name)
+       `(funcall (or (get ',name 'custom-get)
+                     #'symbol-value)
+                 ',name))
+     (lambda (name val)
+       `(progn
+          (custom-load-symbol ',name)
+          (funcall (or (get ',name 'custom-set) #'set-default)
+                   ',name ,val)))))
   :documentation "Set the option NAME to VAL.
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
 will use the car value to modify the behaviour.  These forms are
@@ -449,26 +452,12 @@ therefore not be stored in `custom-set-variables' blocks."
 
 (setup-define :local-set
   (lambda (name val)
-    (cond ((symbolp name) t)
-          ((eq (car-safe name) 'append)
-           (setq name (cadr name)
-                 val (let ((sym (gensym)))
-                       `(let ((,sym ,val) (list ,name))
-                          (if (member ,sym list)
-                              list
-                            (append list (list ,sym)))))))
-          ((eq (car-safe name) 'prepend)
-           (setq name (cadr name)
-                 val (let ((sym (gensym)))
-                       `(let ((,sym ,val) (list ,name))
-                          (if (member ,sym list)
-                              list
-                            (cons ,sym list))))))
-          ((eq (car-safe name) 'remove)
-           (setq name (cadr name)
-                 val `(remove ,val ,name)))
-          ((error "Invalid variable %S" name)))
-    `(add-hook setup-hook (lambda () (setq-local ,name ,val))))
+    (setup--make-setter
+     name val
+     (lambda (name)
+       (if (consp name) (cadr name) name))
+     (lambda (name val)
+       `(add-hook setup-hook (lambda () (setq-local ,name ,val))))))
   :documentation "Set the value of NAME to VAL in buffers of the current mode.
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
 will use the car value to modify the behaviour. These forms are
@@ -497,7 +486,7 @@ supported:
 
 (setup-define :advise
   (lambda (symbol where function)
-    `(advice-add ',symbol ,where ,function))
+    `(advice-add ',symbol ,where ,(setup--ensure-function function)))
   :documentation "Add a piece of advice on a function.
 See `advice-add' for more details."
   :after-loaded t
