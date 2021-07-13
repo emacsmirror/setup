@@ -241,7 +241,7 @@ and VAL into one s-expression."
           (cadr name)
           (let ((sym (gensym)))
             `(let ((,sym ,val)
-                   (list ,(funcall old-val-fn name)))
+                   (list ,(funcall old-val-fn (cadr name))))
                (if (member ,sym list)
                    list
                  (append list (list ,sym)))))))
@@ -250,7 +250,7 @@ and VAL into one s-expression."
           (cadr name)
           (let ((sym (gensym)))
             `(let ((,sym ,val)
-                   (list ,(funcall old-val-fn name)))
+                   (list ,(funcall old-val-fn (cadr name))))
                (if (member ,sym list)
                    list
                  (cons ,sym list))))))
