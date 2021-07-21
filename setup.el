@@ -76,6 +76,8 @@
 (defconst setup--quit-sym (gensym)
   "Symbol thrown on an early exit.")
 
+(defvar setup--need-quit)
+
 (defvar setup-opts `((quit . ,setup--quit-sym))
   "Alist defining context-specific options.
 Values are extracted using `setup-get'.")
@@ -121,13 +123,15 @@ NAME may also be a macro, if it can provide a symbol."
     (push name body)
     (let ((shorthand (get (car name) 'setup-shorthand)))
       (setq name (and shorthand (funcall shorthand name)))))
-  (macroexpand-all
-   (if (assq :with-feature setup-macros)
-       `(catch ',setup--quit-sym
-          (:with-feature ,name ,@body)
-          t)
-     `(catch ',setup--quit-sym ,@body t))
-   (append setup-macros macroexpand-all-environment)))
+  (let* ((setup--need-quit nil)
+         (res (macroexpand-all
+               (if (assq :with-feature setup-macros)
+                   `(:with-feature ,name ,@body)
+                 (macroexp-progn body))
+               (append setup-macros macroexpand-all-environment))))
+    (if setup--need-quit
+        `(catch ',setup--quit-sym ,@(macroexp-unprogn res))
+      res)))
 
 ;;;###autoload
 (put 'setup 'function-documentation '(setup-make-docstring))
@@ -224,6 +228,8 @@ If not given, it is assumed nothing is evaluated."
 
 (defun setup-get (opt)
   "Return value for OPT."
+  (when (eq opt 'quit)
+    (setq setup--need-quit t))
   (or (cdr (assq opt setup-opts))
       (error "Cannot deduce %S from context" opt)))
 
