@@ -114,6 +114,93 @@ Tips
           (package-install ',package)))
    ~~~
 
+Comparison to `use-package`
+---------------------------
+
+The most popular configuration macro for Emacs is
+[`use-package`][use-package], by John Wiegley. The intention is
+similar, but usage is noticeably different.  While `use-package` to
+specifies information about package and it's usage, `setup` is less
+declarative and just provides a set of context-sensitive local macros,
+that are simply substituted.
+
+The higher level of abstraction allows `use-package` to hide some of
+the complexity, by transparently reordering everything into the right
+order. The downside is that it is easy to get lost or forget what
+use-package is doing. Each `setup` macro on the other hand intends to
+encapsulate one common configuration action, and simplify the
+syntax. Here a few examples:
+
+~~~elisp
+(setup flymake
+  (:bind "M-n" #'flymake-goto-next-error
+         "M-p" #'flymake-goto-prev-error)
+  (:hook-into prog-mode))
+~~~
+
+is expanded to
+
+~~~elisp
+(progn
+  (eval-after-load 'flymake
+    (function
+     (lambda nil
+       (progn
+         (define-key flymake-mode-map
+           [134217838]
+           (function flymake-goto-next-error))
+         (define-key flymake-mode-map
+           [134217840]
+           (function flymake-goto-prev-error))))))
+  (add-hook 'prog-mode-hook
+            (function flymake-mode)))
+~~~
+
+The macro `:bind` wraps `define-key` calls in a `eval-after-load`
+block, and automatically parses multiple arguments in a `setq`-like
+fashion. Likewise, `:hook-into` knows to deuce that `flymake-mode`
+should be added to `prog-mode`'s hook (`prog-mode-hook`).
+
+Furthermore `use-package` might be said to be less flexible, because
+the macro assumes a certain kind of usage. Each expression _should_
+define one package. This is not assumed for `setup`: Each body can
+just as easily configure no to as many packages as one wants.
+
+~~~elisp
+(setup (:package company company-math)
+  (:bind "TAB" company-complete))
+~~~
+
+would install both `company` and `company-math`. The context is set to
+`company`, because the `:package` call is the first element of the
+list, and `company` is it's first argument. One might also write
+
+~~~elisp
+(setup
+  (:with-feature company
+    (:package company company-math)
+    (:bind "TAB" company-complete)))
+~~~
+
+that explicit sets the context to the feature `company`.
+
+Similarly, non-context sensitive macros might be used even if `setup`
+cannot deduce what is being configured automatically.  The `setc`
+macro above, is one simple example.
+
+An attempt is also made by `setup.el` to ease extensibility. Each
+macro is defined using the `setup-define` function. Combined with
+further attributes, it allows for the simple definition of local and
+context sensitive macros, that are debug-able, can be composed and
+deferred. While `use-package` is [also extensible][extend-up] the
+process is more difficult because of the more complex syntax and
+higher level of abstraction (at least in the eyes of the `setup`
+author).
+
+Another alternative to `setup` is [`leaf.el`][leaf], that is also
+available on ELPA. It shares the same idea as `use-package` and has a
+richer set of keywords.
+
 Bugs
 ----
 
@@ -131,6 +218,9 @@ Copying
 `setup.el` is distributed under the [GPL v3][gpl3] license.
 
 [elpa]: http://elpa.gnu.org/packages/setup.html
+[use-package]: https://github.com/jwiegley/use-package
+[extend-up]: https://github.com/jwiegley/use-package#how-to-create-an-extension
+[leaf]: https://github.com/conao3/leaf.el
 [mail]: https://lists.sr.ht/~pkal/public-inbox
 [github]: https://github.com/phikal/setup.el
 [ca]: https://www.gnu.org/software/emacs/manual/html_node/emacs/Copyright-Assignment.html#Copyright-Assignment
