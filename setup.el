@@ -228,8 +228,6 @@ If not given, it is assumed nothing is evaluated."
 
 (defun setup-get (opt)
   "Return value for OPT."
-  (when (eq opt 'quit)
-    (setq setup--need-quit t))
   (or (cdr (assq opt setup-opts))
       (error "Cannot deduce %S from context" opt)))
 
@@ -239,6 +237,12 @@ This must be used in context-setting macros (`:with-feature',
 `:with-mode', ...) to ensure that all child-macros use the right
 settings."
   (macroexpand-all (macroexp-progn body) setup-macros))
+
+(defun setup-quit (&optional return)
+  "Generate code to quit evaluation.
+If RETURN is given, throw that value."
+  (setq setup--need-quit t)
+  `(throw ',(setup-get 'quit) ,return))
 
 (defun setup--ensure-kbd (sexp)
   "Attempt to return SEXP as a key binding expression."
@@ -370,7 +374,7 @@ the first PACKAGE."
 (setup-define :require
   (lambda (feature)
     `(unless (require ',feature nil t)
-       (throw ',(setup-get 'quit) nil)))
+       ,(setup-quit)))
   :documentation "Try to require FEATURE, or stop evaluating body.
 This macro can be used as HEAD, and it will replace itself with
 the first FEATURE."
@@ -532,14 +536,14 @@ See `advice-add' for more details."
 (setup-define :needs
   (lambda (executable)
     `(unless (executable-find ,executable)
-       (throw ',(setup-get 'quit) nil)))
+       ,(setup-quit)))
   :documentation "If EXECUTABLE is not in the path, stop here."
   :repeatable 1)
 
 (setup-define :if-package
   (lambda (package)
     `(unless (package-installed-p ',package)
-       (throw ',(setup-get 'quit) nil)))
+       ,(setup-quit)))
   :documentation "If package is not installed, stop evaluating the body.
 This macro can be used as HEAD, and it will replace itself with
 the first PACKAGE."
@@ -549,7 +553,7 @@ the first PACKAGE."
 (setup-define :if-feature
   (lambda (feature)
     `(unless (featurep ',feature)
-       (throw ',(setup-get 'quit) nil)))
+       ,(setup-quit)))
   :documentation "If FEATURE is not available, stop evaluating the body.
 This macro can be used as HEAD, and it will replace itself with
 the first PACKAGE."
@@ -559,13 +563,13 @@ the first PACKAGE."
 (setup-define :if-host
   (lambda (hostname)
     `(unless (string= (system-name) ,hostname)
-       (throw ',(setup-get 'quit) nil)))
+       ,(setup-quit)))
   :documentation "If HOSTNAME is not the current hostname, stop evaluating form.")
 
 (setup-define :only-if
   (lambda (condition)
     `(unless ,condition
-       (throw ',(setup-get 'quit) nil)))
+       ,(setup-quit)))
   :documentation "If CONDITION is non-nil, stop evaluating the body."
   :debug '(form)
   :repeatable t)
@@ -574,7 +578,7 @@ the first PACKAGE."
   (lambda (path)
     `(if (file-exists-p ,path)
          (add-to-list 'load-path (expand-file-name ,path))
-       (throw ',(setup-get 'quit) nil)))
+       ,(setup-quit)))
   :documentation "Add PATH to load path.
 This macro can be used as HEAD, and it will replace itself with
 the nondirectory part of PATH.
