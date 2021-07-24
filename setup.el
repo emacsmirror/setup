@@ -244,13 +244,13 @@ If RETURN is given, throw that value."
   (setq setup--need-quit t)
   `(throw ',(setup-get 'quit) ,return))
 
-(defun setup--ensure-kbd (sexp)
+(defun setup-ensure-kbd (sexp)
   "Attempt to return SEXP as a key binding expression."
   (cond ((stringp sexp) (kbd sexp))
         ((symbolp sexp) `(kbd ,sexp))
         (sexp)))
 
-(defun setup--ensure-function (sexp)
+(defun setup-ensure-function (sexp)
   "Attempt to return SEXP as a quoted function name."
   (cond ((eq (car-safe sexp) 'function)
          sexp)
@@ -260,7 +260,7 @@ If RETURN is given, throw that value."
          `#',sexp)
         (sexp)))
 
-(defun setup--make-setter (name val old-val-fn wrap-fn)
+(defun setup-make-setter (name val old-val-fn wrap-fn)
   "Convert NAME and VAL into setter code.
 The function OLD-VAL-FN is used to extract the old value of
 VAL.  The function WRAP-FN combines the transformed values of NAME
@@ -384,8 +384,8 @@ the first FEATURE."
 (setup-define :global
   (lambda (key command)
     `(global-set-key
-      ,(setup--ensure-kbd key)
-      ,(setup--ensure-function command)))
+      ,(setup-ensure-kbd key)
+      ,(setup-ensure-function command)))
   :documentation "Globally bind KEY to COMMAND."
   :debug '(form sexp)
   :repeatable t)
@@ -393,8 +393,8 @@ the first FEATURE."
 (setup-define :bind
   (lambda (key command)
     `(define-key ,(setup-get 'map)
-       ,(setup--ensure-kbd key)
-       ,(setup--ensure-function command)))
+       ,(setup-ensure-kbd key)
+       ,(setup-ensure-function command)))
   :documentation "Bind KEY to COMMAND in current map."
   :after-loaded t
   :debug '(form sexp)
@@ -403,7 +403,7 @@ the first FEATURE."
 (setup-define :unbind
   (lambda (key)
     `(define-key ,(setup-get 'map)
-       ,(setup--ensure-kbd key)
+       ,(setup-ensure-kbd key)
        nil))
   :documentation "Unbind KEY in current map."
   :after-loaded t
@@ -416,8 +416,8 @@ the first FEATURE."
        (dolist (key (where-is-internal ',command ,(setup-get 'map)))
          (define-key ,(setup-get 'map) key nil))
        (define-key ,(setup-get 'map)
-         ,(setup--ensure-kbd key)
-         ,(setup--ensure-function command))))
+         ,(setup-ensure-kbd key)
+         ,(setup-ensure-function command))))
   :documentation "Unbind the current key for COMMAND, and bind it to KEY."
   :after-loaded t
   :debug '(form sexp)
@@ -425,7 +425,7 @@ the first FEATURE."
 
 (setup-define :hook
   (lambda (function)
-    `(add-hook ',(setup-get 'hook) ,(setup--ensure-function function)))
+    `(add-hook ',(setup-get 'hook) ,(setup-ensure-function function)))
   :documentation "Add FUNCTION to current hook."
   :repeatable t)
 
@@ -435,13 +435,13 @@ the first FEATURE."
                    (if (string-match-p "-hook\\'" name)
                        mode
                      (intern (concat name "-hook"))))
-               ,(setup--ensure-function (setup-get 'mode))))
+               ,(setup-ensure-function (setup-get 'mode))))
   :documentation "Add current mode to HOOK."
   :repeatable t)
 
 (setup-define :option
   (lambda (name val)
-    (setup--make-setter
+    (setup-make-setter
      name val
      (lambda (name)
        `(funcall (or (get ',name 'custom-get)
@@ -485,7 +485,7 @@ therefore not be stored in `custom-set-variables' blocks."
 
 (setup-define :local-set
   (lambda (name val)
-    (setup--make-setter
+    (setup-make-setter
      name val
      (lambda (name)
        (if (consp name) (cadr name) name))
@@ -519,7 +519,7 @@ supported:
 
 (setup-define :advise
   (lambda (symbol where function)
-    `(advice-add ',symbol ,where ,(setup--ensure-function function)))
+    `(advice-add ',symbol ,where ,(setup-ensure-function function)))
   :documentation "Add a piece of advice on a function.
 See `advice-add' for more details."
   :after-loaded t
