@@ -76,7 +76,7 @@
 (defconst setup--quit-sym (gensym)
   "Symbol thrown on an early exit.")
 
-(defvar setup--need-quit)
+(defvar setup--need-quit)               ;see `setup-quit'
 
 (defvar setup-opts `((quit . ,setup--quit-sym))
   "Alist defining context-specific options.
