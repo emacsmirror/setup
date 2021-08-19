@@ -69,6 +69,8 @@
 ;; Additional "keywords" can be defined using `setup-define'.  All
 ;; known keywords are documented in the docstring for `setup'.
 
+;; More information can be found here: https://www.emacswiki.org/emacs/SetupEl
+
 ;;; Code:
 
 (require 'elisp-mode)
