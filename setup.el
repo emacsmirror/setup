@@ -522,7 +522,7 @@ supported:
   (lambda (hook function)
     `(add-hook ',(setup-get 'hook)
                (lambda ()
-                 (add-hook ',hook #',function nil t))))
+                 (add-hook ',hook ,(setup-ensure-function function) nil t))))
   :documentation "Add FUNCTION to HOOK only in buffers of the current mode."
   :debug '(symbolp sexp)
   :repeatable t)
