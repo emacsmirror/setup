@@ -599,7 +599,7 @@ If PATH does not exist, abort the evaluation."
 
 (setup-define :file-match
   (lambda (pat)
-    `(add-to-list 'auto-mode-alist (cons ,pat ,(setup-get 'mode))))
+    `(add-to-list 'auto-mode-alist (cons ,pat ',(setup-get 'mode))))
   :documentation "Associate the current mode with files that match PAT."
   :debug '(form)
   :repeatable t)
