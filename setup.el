@@ -376,7 +376,7 @@ If HOOK is a list, apply BODY to all elements of HOOK."
          (package-refresh-contents))
        (package-install ',package)))
   :documentation "Install PACKAGE if it hasn't been installed yet.
-This macro can be used as HEAD, and it will replace itself with
+This macro can be used as NAME, and it will replace itself with
 the first PACKAGE."
   :repeatable t
   :shorthand #'cadr)
@@ -386,7 +386,7 @@ the first PACKAGE."
     `(unless (require ',feature nil t)
        ,(setup-quit)))
   :documentation "Try to require FEATURE, or stop evaluating body.
-This macro can be used as HEAD, and it will replace itself with
+This macro can be used as NAME, and it will replace itself with
 the first FEATURE."
   :repeatable t
   :shorthand #'cadr)
@@ -555,7 +555,7 @@ See `advice-add' for more details."
     `(unless (package-installed-p ',package)
        ,(setup-quit)))
   :documentation "If package is not installed, stop evaluating the body.
-This macro can be used as HEAD, and it will replace itself with
+This macro can be used as NAME, and it will replace itself with
 the first PACKAGE."
   :repeatable t
   :shorthand #'cadr)
@@ -565,7 +565,7 @@ the first PACKAGE."
     `(unless (featurep ',feature)
        ,(setup-quit)))
   :documentation "If FEATURE is not available, stop evaluating the body.
-This macro can be used as HEAD, and it will replace itself with
+This macro can be used as NAME, and it will replace itself with
 the first PACKAGE."
   :repeatable t
   :shorthand #'cadr)
@@ -590,7 +590,7 @@ the first PACKAGE."
          (add-to-list 'load-path (expand-file-name ,path))
        ,(setup-quit)))
   :documentation "Add PATH to load path.
-This macro can be used as HEAD, and it will replace itself with
+This macro can be used as NAME, and it will replace itself with
 the nondirectory part of PATH.
 If PATH does not exist, abort the evaluation."
   :shorthand (lambda (args) (intern
