@@ -586,9 +586,10 @@ the first PACKAGE."
 
 (setup-define :load-from
   (lambda (path)
-    `(if (file-exists-p ,path)
-         (add-to-list 'load-path (expand-file-name ,path))
-       ,(setup-quit)))
+    `(let ((path* (expand-file-name ,path)))
+       (if (file-exists-p path*)
+           (add-to-list 'load-path path*)
+         ,(setup-quit))))
   :documentation "Add PATH to load path.
 This macro can be used as NAME, and it will replace itself with
 the nondirectory part of PATH.
