@@ -83,12 +83,9 @@
 
 (require 'elisp-mode)
 
-(defconst setup--quit-sym (gensym)
-  "Symbol thrown on an early exit.")
-
 (defvar setup--need-quit)               ;see `setup-quit'
 
-(defvar setup-opts `((quit . ,setup--quit-sym))
+(defvar setup-opts `((quit . ,(make-symbol "setup-quit")))
   "Alist defining context-specific options.
 Values are extracted using `setup-get'.")
 
@@ -140,7 +137,7 @@ NAME may also be a macro, if it can provide a symbol."
                  (macroexp-progn body))
                (append setup-macros macroexpand-all-environment))))
     (if setup--need-quit
-        `(catch ',setup--quit-sym ,@(macroexp-unprogn res))
+        `(catch ',(setup-get 'quit) ,@(macroexp-unprogn res))
       res)))
 
 ;;;###autoload
