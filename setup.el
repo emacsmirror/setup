@@ -232,7 +232,7 @@ If not given, it is assumed nothing is evaluated."
              #'setup-xref-def-function)
 
 
-;;; common utility functions for keywords
+;;; Common utility functions for keywords
 
 (defun setup-get (opt)
   "Retrieve the context-sensitive value for OPT.
@@ -301,7 +301,7 @@ and VAL into one s-expression."
         ((error "Invalid option %S" name))))
 
 
-;;; definitions of `setup' keywords
+;;; Definitions of `setup' keywords
 
 (setup-define :with-feature
   (lambda (features &rest body)
