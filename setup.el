@@ -84,8 +84,11 @@
 (defvar setup--need-quit)               ;see `setup-quit'
 
 (defvar setup-opts `((quit . ,(make-symbol "setup-quit")))
-  "Alist defining context-specific options.
-Values are extracted using `setup-get'.")
+  "Alist defining the context for local macros.
+Context-modifying macros (`:with-feature', `:with-mode', ...)
+prepend the new context to this variable using `let', before
+calling `setup-expand'.  Within the macro definitions `setup-get'
+is used to retrieve the current context.")
 
 (defvar setup-macros nil
   "Local macro definitions to be bound in `setup' bodies.
@@ -232,7 +235,9 @@ If not given, it is assumed nothing is evaluated."
 ;;; common utility functions for keywords
 
 (defun setup-get (opt)
-  "Return value for OPT."
+  "Retrieve the context-sensitive value for OPT.
+If the context is not defined, an error is thrown.  See
+`setup-opts' for more details."
   (or (cdr (assq opt setup-opts))
       (error "Cannot deduce %S from context" opt)))
 
