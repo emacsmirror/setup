@@ -125,8 +125,6 @@ will otherwise just be evaluated as is.
 NAME may also be a macro, if it can provide a symbol."
   (declare (debug (&rest &or [symbolp sexp] form))
            (indent defun))
-  (unless lexical-binding
-    (error "The `setup' macro requires lexical binding"))
   (when (consp name)
     (push name body)
     (let ((shorthand (get (car name) 'setup-shorthand)))
