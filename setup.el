@@ -81,8 +81,6 @@
 
 (require 'elisp-mode)
 
-(defvar setup--need-quit)               ;see `setup-quit'
-
 (defvar setup-opts `((quit . ,(make-symbol "setup-quit")))
   "Alist defining the context for local macros.
 Context-modifying macros (`:with-feature', `:with-mode', ...)
@@ -90,10 +88,42 @@ prepend the new context to this variable using `let', before
 calling `setup-expand'.  Within the macro definitions `setup-get'
 is used to retrieve the current context.")
 
+(defvar setup-attributes '(error-demotion)
+  "A list symbols to be used by `setup-modifier-list'.")
+
+(defun setup-wrap-to-catch-quits (body _name)
+  "Wrap BODY in a catch block if necessary."
+  (if (memq 'need-quit setup-attributes)
+      `(catch ',(setup-get 'quit) ,@(macroexp-unprogn body))
+    body))
+
+(defun setup-wrap-to-demote-errors (body _name)
+  "Wrap BODY in a `with-demoted-errors' block."
+  (if (memq 'error-demotion setup-attributes)
+      `(with-demoted-errors ,(format "Error in setup form on line %d: %%S"
+                                     (line-number-at-pos))
+         ,body)
+    body))
+
+(defvar setup-modifier-list
+  '(setup-expand-local-macros
+    setup-wrap-to-catch-quits
+    setup-wrap-to-demote-errors)
+  "List of wrapper functions to be called after macro expansion.")
+
 (defvar setup-macros nil
   "Local macro definitions to be bound in `setup' bodies.
 Do not modify this variable by hand.  Instead use
 `setup-define.'")
+
+(defun setup-expand-local-macros (body name)
+  "Expand macros in BODY given by `setup-macros'.
+NAME is a symbol or string designating the default feature."
+  (macroexpand-all
+      (if (assq :with-feature setup-macros)
+          `(:with-feature ,name ,@body)
+        (macroexp-progn body))
+      (append setup-macros macroexpand-all-environment)))
 
 ;;;###autoload
 (defun setup-make-docstring ()
@@ -129,15 +159,10 @@ NAME may also be a macro, if it can provide a symbol."
     (push name body)
     (let ((shorthand (get (car name) 'setup-shorthand)))
       (setq name (and shorthand (funcall shorthand name)))))
-  (let* ((setup--need-quit nil)
-         (res (macroexpand-all
-               (if (assq :with-feature setup-macros)
-                   `(:with-feature ,name ,@body)
-                 (macroexp-progn body))
-               (append setup-macros macroexpand-all-environment))))
-    (if setup--need-quit
-        `(catch ',(setup-get 'quit) ,@(macroexp-unprogn res))
-      res)))
+  (let ((setup-attributes setup-attributes))
+    (dolist (mod-fn setup-modifier-list)
+      (setq body (funcall mod-fn body name)))
+    body))
 
 ;;;###autoload
 (put 'setup 'function-documentation '(setup-make-docstring))
@@ -249,7 +274,7 @@ settings."
 (defun setup-quit (&optional return)
   "Generate code to quit evaluation.
 If RETURN is given, throw that value."
-  (setq setup--need-quit t)
+  (push 'need-quit setup-attributes)
   `(throw ',(setup-get 'quit) ,return))
 
 (defun setup-ensure-kbd (sexp)
@@ -610,6 +635,13 @@ instead choose a more specialized alternative or write one
 yourself."
   :debug '(setup)
   :after-loaded t)
+
+(setup-define :without-error-demotion
+    (lambda ()
+      (setq setup-attributes (delq 'error-demotion setup-attributes))
+      nil)
+  :documentation "Prevent the setup body from demoting errors.
+See `setup-wrap-to-demote-errors'.")
 
 (provide 'setup)
 
