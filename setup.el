@@ -4,7 +4,7 @@
 
 ;; Author: Philip Kaludercic <philipk@posteo.net>
 ;; Maintainer: Philip Kaludercic <philipk@posteo.net>
-;; Version: 1.0.1
+;; Version: 1.1.0
 ;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: lisp, local
 ;; URL: https://git.sr.ht/~pkal/setup
@@ -33,6 +33,18 @@
 
 ;; Examples and extended documentation can be found on Emacs wiki:
 ;; https://www.emacswiki.org/emacs/SetupEl
+
+;;; News
+
+;;;; Version 1.1.0:
+;;
+;; - Fix quoting error in :file-match definition
+;; - Remove unnecessary check for lexical binding
+;; - Change `setup-define' indentation
+;; - Handle multiple expressions in :when-loaded
+;; - Improvements to setup docstring
+;; - Wrap `setup' forms with `with-demoted-errors'
+;; - Allow `setup' to be extended using `setup-modifier-list'
 
 ;;; Code:
 
