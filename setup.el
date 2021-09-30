@@ -606,13 +606,6 @@ yourself."
   :after-loaded t
   :indent 0)
 
-(setup-define :without-error-demotion
-    (lambda ()
-      (setq setup-attributes (delq 'error-demotion setup-attributes))
-      nil)
-  :documentation "Prevent the setup body from demoting errors.
-See `setup-wrap-to-demote-errors'.")
-
 (provide 'setup)
 
 ;;; setup.el ends here
