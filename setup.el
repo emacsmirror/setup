@@ -585,13 +585,16 @@ If PATH does not exist, abort the evaluation."
   :debug '(form)
   :repeatable t)
 
-(setup-define :when-loaded #'identity
+(setup-define :when-loaded
+    (lambda (&rest body)
+      (macroexp-progn body))
   :documentation "Evaluate BODY after the current feature has been loaded.
 Avoid using this macro whenever possible, and
 instead choose a more specialized alternative or write one
 yourself."
   :debug '(setup)
-  :after-loaded t)
+  :after-loaded t
+  :indent 0)
 
 (setup-define :without-error-demotion
     (lambda ()
