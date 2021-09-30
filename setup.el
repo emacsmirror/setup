@@ -90,7 +90,13 @@ NAME is a symbol or string designating the default feature."
             "\n\n")
     (if (null setup-macros)
         (insert "No local macros are defined.")
-      (insert "Within BODY, `setup' provides these local macros:")
+      (insert "Within BODY, `setup' is able to expand context-sensitive local macros.  "
+              "Some of these may be evaluated after the respective current feature "
+              "has been loaded, by wrapping the expression in a `with-eval-after-load' block.  "
+              "In the following list this is indicated by a \"*\".  "
+              "Otherwise a \"-\" is used for all macros that expand to code "
+              "that is immediately evaluated.")
+      (fill-paragraph)
       (dolist (sym (sort (mapcar #'car setup-macros) #'string-lessp))
         (newline 2)
         (let ((sig (mapcar
@@ -99,7 +105,10 @@ NAME is a symbol or string designating the default feature."
                           arg
                         (intern (upcase (symbol-name arg)))))
                     (get sym 'setup-signature))))
-          (insert (format " - %s\n\n" (cons sym sig))
+          (insert (format " %c %s\n\n"
+                          (if (get sym 'setup-delayed-eval)
+                              ?* ?-)
+                          (cons sym sig))
                   (or (get sym 'setup-documentation)
                       "No documentation.")))))
     (buffer-string)))
@@ -169,6 +178,7 @@ If not given, it is assumed nothing is evaluated."
                    (if (plist-get opts :repeatable) '(...)))))
   (put name 'setup-shorthand (plist-get opts :shorthand))
   (put name 'setup-definition-file (or load-file-name buffer-file-name))
+  (put name 'setup-delayed-eval (plist-get opts :after-loaded))
   (put name 'lisp-indent-function (plist-get opts :indent))
   ;; define macro for `macroexpand-all'
   (setf (alist-get name setup-macros)   ;New in Emacs-25.
