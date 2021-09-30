@@ -45,28 +45,36 @@ prepend the new context to this variable using `let', before
 calling `setup-expand'.  Within the macro definitions `setup-get'
 is used to retrieve the current context.")
 
-(defvar setup-attributes '(error-demotion)
-  "A list symbols to be used by `setup-modifier-list'.")
+(defvar setup-attributes '()
+  "A list symbols used to store a state during macro processing.
+The list is populated during macro expansion, and may modify the
+behaviour of the functions in `setup-modifier-list'..")
 
 (defun setup-wrap-to-catch-quits (body _name)
-  "Wrap BODY in a catch block if necessary."
+  "Wrap BODY in a catch block if necessary.
+The body is wrapped in a `catch' block if `setup-attributes'
+contains the symbol `need-quit'."
   (if (memq 'need-quit setup-attributes)
       `(catch ',(setup-get 'quit) ,@(macroexp-unprogn body))
     body))
 
 (defun setup-wrap-to-demote-errors (body _name)
-  "Wrap BODY in a `with-demoted-errors' block."
-  (if (memq 'error-demotion setup-attributes)
-      `(with-demoted-errors ,(format "Error in setup form on line %d: %%S"
+  "Wrap BODY in a `with-demoted-errors' block.
+This behaviour is prevented, if `setup-attributes' contains the
+symbol `without-error-demotion'."
+  (if (memq 'without-error-demotion setup-attributes)
+      body
+    `(with-demoted-errors ,(format "Error in setup form on line %d: %%S"
                                      (line-number-at-pos))
-         ,body)
-    body))
+       ,body)))
 
 (defvar setup-modifier-list
   '(setup-expand-local-macros
     setup-wrap-to-catch-quits
     setup-wrap-to-demote-errors)
-  "List of wrapper functions to be called after macro expansion.")
+  "List of wrapper functions to be called after macro expansion.
+Each function is invoked by passing the current body and the name
+of the default feature, returning the modified body.")
 
 (defvar setup-macros nil
   "Local macro definitions to be bound in `setup' bodies.
