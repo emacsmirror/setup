@@ -307,7 +307,7 @@ and VAL into one s-expression."
         ((eq (car-safe name) 'remove)
          (funcall wrap-fn
                   (cadr name)
-                  `(remove ,val ,(funcall old-val-fn name))))
+                  `(remove ,val ,(funcall old-val-fn (cadr name)))))
         ((error "Invalid option %S" name))))
 
 
