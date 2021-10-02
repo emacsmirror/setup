@@ -590,7 +590,7 @@ the first PACKAGE."
     (lambda (condition)
       `(unless ,condition
          ,(setup-quit)))
-  :documentation "If CONDITION is non-nil, stop evaluating the body."
+  :documentation "If CONDITION evaluates to nil, stop evaluating the body."
   :debug '(form)
   :repeatable t)
 
