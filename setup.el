@@ -49,6 +49,8 @@
 ;;;; Version 1.2.0
 ;;
 ;; - Remove `setup-wrap-to-demote-errors' from `setup-modifier-list'
+;; - Let `:with-feature' and `:with-mode' check symbol properties to
+;;   improve context-setting guesses.
 
 ;;; Code:
 
@@ -325,9 +327,13 @@ and VAL into one s-expression."
                                      feature
                                    (intern (format "%s-mode" feature))))
                            (setup-opts `((feature . ,feature)
-                                         (mode . ,mode)
-                                         (hook . ,(intern (format "%s-hook" mode)))
-                                         (map . ,(intern (format "%s-map" mode)))
+                                         (mode . ,(or (get features 'setup-mode) mode))
+                                         (hook . ,(or (get features 'setup-hook)
+                                                      (get mode 'setup-hook)
+                                                      (intern (format "%s-hook" mode))))
+                                         (map . ,(or (get features 'setup-map)
+                                                     (get mode 'setup-map)
+                                                     (intern (format "%s-map" mode))))
                                          ,@setup-opts)))
                       (setup-expand body))
                   body)
@@ -345,8 +351,10 @@ If FEATURE is a list, apply BODY to all elements of FEATURE."
       (let (bodies)
         (dolist (mode (if (listp modes) modes (list modes)))
           (push (let ((setup-opts `((mode . ,mode)
-                                    (hook . ,(intern (format "%s-hook" mode)))
-                                    (map . ,(intern (format "%s-map" mode)))
+                                    (hook . ,(or (get mode 'setup-hook)
+                                                 (intern (format "%s-hook" mode))))
+                                    (map . ,(or (get mode 'setup-map)
+                                                (intern (format "%s-map" mode))))
                                     ,@setup-opts)))
                   (setup-expand body))
                 bodies))
