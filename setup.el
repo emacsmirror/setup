@@ -45,6 +45,10 @@
 ;; - Improvements to setup docstring
 ;; - Wrap `setup' forms with `with-demoted-errors'
 ;; - Allow `setup' to be extended using `setup-modifier-list'
+;;
+;;;; Version 1.2.0
+;;
+;; - Remove `setup-wrap-to-demote-errors' from `setup-modifier-list'
 
 ;;; Code:
 
@@ -82,8 +86,7 @@ symbol `without-error-demotion'."
 
 (defvar setup-modifier-list
   '(setup-expand-local-macros
-    setup-wrap-to-catch-quits
-    setup-wrap-to-demote-errors)
+    setup-wrap-to-catch-quits)
   "List of wrapper functions to be called after macro expansion.
 Each function is invoked by passing the current body and the name
 of the default feature, returning the modified body.")
