@@ -36,6 +36,14 @@
 
 ;;; News:
 
+;;;; Version 1.2.0
+;;
+;; - Remove `setup-wrap-to-demote-errors' from `setup-modifier-list'
+;; - Let `:with-feature' and `:with-mode' check symbol properties to
+;;   improve context-setting guesses.
+;; - Move macros :hide-mode, :advise, :needs, :if-host and :load-from
+;;   to EmacsWiki.
+;;
 ;;;; Version 1.1.0:
 ;;
 ;; - Fix quoting error in :file-match definition
@@ -45,14 +53,6 @@
 ;; - Improvements to setup docstring
 ;; - Wrap `setup' forms with `with-demoted-errors'
 ;; - Allow `setup' to be extended using `setup-modifier-list'
-;;
-;;;; Version 1.2.0
-;;
-;; - Remove `setup-wrap-to-demote-errors' from `setup-modifier-list'
-;; - Let `:with-feature' and `:with-mode' check symbol properties to
-;;   improve context-setting guesses.
-;; - Move macros :hide-mode, :advise, :needs, :if-host and :load-from
-;;   to EmacsWiki.
 
 ;;; Code:
 
