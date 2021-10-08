@@ -34,7 +34,7 @@
 ;; Examples and extended documentation can be found on Emacs wiki:
 ;; https://www.emacswiki.org/emacs/SetupEl
 
-;;; News
+;;; News:
 
 ;;;; Version 1.1.0:
 ;;
