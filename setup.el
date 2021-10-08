@@ -51,6 +51,8 @@
 ;; - Remove `setup-wrap-to-demote-errors' from `setup-modifier-list'
 ;; - Let `:with-feature' and `:with-mode' check symbol properties to
 ;;   improve context-setting guesses.
+;; - Move macros :hide-mode, :advise, :needs, :if-host and :load-from
+;;   to EmacsWiki.
 
 ;;; Code:
 
@@ -506,14 +508,6 @@ therefore not be stored in `custom-set-variables' blocks."
   :debug '(sexp form)
   :repeatable t)
 
-(setup-define :hide-mode
-    (lambda ()
-      `(setq minor-mode-alist
-             (delq (assq ,(setup-get 'mode) minor-mode-alist)
-                   minor-mode-alist)))
-  :documentation "Hide the mode-line lighter of the current mode."
-  :after-loaded t)
-
 (setup-define :local-set
     (lambda (name val)
       (setup-make-setter
@@ -548,28 +542,12 @@ supported:
   :debug '(symbolp sexp)
   :repeatable t)
 
-(setup-define :advise
-    (lambda (symbol where function)
-      `(advice-add ',symbol ,where ,(setup-ensure-function function)))
-  :documentation "Add a piece of advice on a function.
-See `advice-add' for more details."
-  :after-loaded t
-  :debug '(sexp sexp function-form)
-  :repeatable t)
-
 (setup-define :also-load
     (lambda (feature)
       `(require ',feature))
   :documentation "Load FEATURE with the current body."
   :after-loaded t
   :repeatable t)
-
-(setup-define :needs
-    (lambda (executable)
-      `(unless (executable-find ,executable)
-         ,(setup-quit)))
-  :documentation "If EXECUTABLE is not in the path, stop here."
-  :repeatable 1)
 
 (setup-define :if-package
     (lambda (package)
@@ -591,12 +569,6 @@ the first PACKAGE."
   :repeatable t
   :shorthand #'cadr)
 
-(setup-define :if-host
-    (lambda (hostname)
-      `(unless (string= (system-name) ,hostname)
-         ,(setup-quit)))
-  :documentation "If HOSTNAME is not the current hostname, stop evaluating form.")
-
 (setup-define :only-if
     (lambda (condition)
       `(unless ,condition
@@ -604,21 +576,6 @@ the first PACKAGE."
   :documentation "If CONDITION evaluates to nil, stop evaluating the body."
   :debug '(form)
   :repeatable t)
-
-(setup-define :load-from
-    (lambda (path)
-      `(let ((path* (expand-file-name ,path)))
-         (if (file-exists-p path*)
-             (add-to-list 'load-path path*)
-           ,(setup-quit))))
-  :documentation "Add PATH to load path.
-This macro can be used as NAME, and it will replace itself with
-the nondirectory part of PATH.
-If PATH does not exist, abort the evaluation."
-  :shorthand (lambda (args)
-               (intern
-                (file-name-nondirectory
-                 (directory-file-name (cadr args))))))
 
 (setup-define :file-match
     (lambda (pat)
