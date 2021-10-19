@@ -39,6 +39,7 @@
 ;;;; Version 1.2.0
 ;;
 ;; - Remove `setup-wrap-to-demote-errors' from `setup-modifier-list'
+;; - Pull `setup-expand-local-macros'  back into `setup'
 ;; - Let `:with-feature' and `:with-mode' check symbol properties to
 ;;   improve context-setting guesses.
 ;; - Move macros :hide-mode, :advise, :needs, :if-host and :load-from
@@ -89,8 +90,7 @@ symbol `without-error-demotion'."
        ,body)))
 
 (defvar setup-modifier-list
-  '(setup-expand-local-macros
-    setup-wrap-to-catch-quits)
+  '(setup-wrap-to-catch-quits)
   "List of wrapper functions to be called after macro expansion.
 Each function is invoked by passing the current body and the name
 of the default feature, returning the modified body.")
@@ -99,15 +99,6 @@ of the default feature, returning the modified body.")
   "Local macro definitions to be bound in `setup' bodies.
 Do not modify this variable by hand.  Instead use
 `setup-define.'")
-
-(defun setup-expand-local-macros (body name)
-  "Expand macros in BODY given by `setup-macros'.
-NAME is a symbol or string designating the default feature."
-  (macroexpand-all
-   (if (assq :with-feature setup-macros)
-       `(:with-feature ,name ,@body)
-     (macroexp-progn body))
-   (append setup-macros macroexpand-all-environment)))
 
 ;;;###autoload
 (defun setup-make-docstring ()
@@ -153,6 +144,11 @@ NAME may also be a macro, if it can provide a symbol."
     (let ((shorthand (get (car name) 'setup-shorthand)))
       (setq name (and shorthand (funcall shorthand name)))))
   (let ((setup-attributes setup-attributes))
+    (setq body (macroexpand-all
+                (if (assq :with-feature setup-macros)
+                    `(:with-feature ,name ,@body)
+                  (macroexp-progn body))
+                setup-macros))
     (dolist (mod-fn setup-modifier-list)
       (setq body (funcall mod-fn body name)))
     body))
