@@ -44,6 +44,7 @@
 ;;   improve context-setting guesses.
 ;; - Move macros :hide-mode, :advise, :needs, :if-host and :load-from
 ;;   to EmacsWiki.
+;; - Revert the indentation spec change for `setup-define'
 ;;
 ;;;; Version 1.1.0:
 ;;
@@ -185,7 +186,7 @@ returns a symbol to replace NAME.
   :debug SPEC
 A edebug specification, see Info node `(elisp) Specification List'.
 If not given, it is assumed nothing is evaluated."
-  (declare (indent 2))
+  (declare (indent 1))
   ;; NB.: NAME is not required to by a keyword, even though all macros
   ;;      specified on the next page use keywords.  The rationale for
   ;;      this is currently that there is no clean way to "locally"
@@ -317,26 +318,26 @@ and VAL into one s-expression."
 ;;; Default local macros definitions
 
 (setup-define :with-feature
-    (lambda (features &rest body)
-      (let (bodies)
-        (dolist (feature (if (listp features) features (list features)))
-          (push (if feature
-                    (let* ((mode (if (string-match-p "-mode\\'" (symbol-name feature))
-                                     feature
-                                   (intern (format "%s-mode" feature))))
-                           (setup-opts `((feature . ,feature)
-                                         (mode . ,(or (get features 'setup-mode) mode))
-                                         (hook . ,(or (get features 'setup-hook)
-                                                      (get mode 'setup-hook)
-                                                      (intern (format "%s-hook" mode))))
-                                         (map . ,(or (get features 'setup-map)
-                                                     (get mode 'setup-map)
-                                                     (intern (format "%s-map" mode))))
-                                         ,@setup-opts)))
-                      (setup-expand body))
-                  body)
-                bodies))
-        (macroexp-progn (if features (nreverse bodies) body))))
+  (lambda (features &rest body)
+    (let (bodies)
+      (dolist (feature (if (listp features) features (list features)))
+        (push (if feature
+                  (let* ((mode (if (string-match-p "-mode\\'" (symbol-name feature))
+                                   feature
+                                 (intern (format "%s-mode" feature))))
+                         (setup-opts `((feature . ,feature)
+                                       (mode . ,(or (get features 'setup-mode) mode))
+                                       (hook . ,(or (get features 'setup-hook)
+                                                    (get mode 'setup-hook)
+                                                    (intern (format "%s-hook" mode))))
+                                       (map . ,(or (get features 'setup-map)
+                                                   (get mode 'setup-map)
+                                                   (intern (format "%s-map" mode))))
+                                       ,@setup-opts)))
+                    (setup-expand body))
+                body)
+              bodies))
+      (macroexp-progn (if features (nreverse bodies) body))))
   :documentation "Change the FEATURE that BODY is configuring.
 This macro also declares a current mode by appending \"-mode\" to
 FEATURE, unless it already ends with \"-mode\".
@@ -345,55 +346,55 @@ If FEATURE is a list, apply BODY to all elements of FEATURE."
   :indent 1)
 
 (setup-define :with-mode
-    (lambda (modes &rest body)
-      (let (bodies)
-        (dolist (mode (if (listp modes) modes (list modes)))
-          (push (let ((setup-opts `((mode . ,mode)
-                                    (hook . ,(or (get mode 'setup-hook)
-                                                 (intern (format "%s-hook" mode))))
-                                    (map . ,(or (get mode 'setup-map)
-                                                (intern (format "%s-map" mode))))
-                                    ,@setup-opts)))
-                  (setup-expand body))
-                bodies))
-        (macroexp-progn (nreverse bodies))))
+  (lambda (modes &rest body)
+    (let (bodies)
+      (dolist (mode (if (listp modes) modes (list modes)))
+        (push (let ((setup-opts `((mode . ,mode)
+                                  (hook . ,(or (get mode 'setup-hook)
+                                               (intern (format "%s-hook" mode))))
+                                  (map . ,(or (get mode 'setup-map)
+                                              (intern (format "%s-map" mode))))
+                                  ,@setup-opts)))
+                (setup-expand body))
+              bodies))
+      (macroexp-progn (nreverse bodies))))
   :documentation "Change the MODE that BODY is configuring.
 If MODE is a list, apply BODY to all elements of MODE."
   :debug '(sexp setup)
   :indent 1)
 
 (setup-define :with-map
-    (lambda (maps &rest body)
-      (let (bodies)
-        (dolist (map (if (listp maps) maps (list maps)))
-          (push (let ((setup-opts (cons `(map . ,map) setup-opts)))
-                  (setup-expand body))
-                bodies))
-        (macroexp-progn (nreverse bodies))))
+  (lambda (maps &rest body)
+    (let (bodies)
+      (dolist (map (if (listp maps) maps (list maps)))
+        (push (let ((setup-opts (cons `(map . ,map) setup-opts)))
+                (setup-expand body))
+              bodies))
+      (macroexp-progn (nreverse bodies))))
   :documentation "Change the MAP that BODY will bind to.
 If MAP is a list, apply BODY to all elements of MAP."
   :debug '(sexp setup)
   :indent 1)
 
 (setup-define :with-hook
-    (lambda (hooks &rest body)
-      (let (bodies)
-        (dolist (hook (if (listp hooks) hooks (list hooks)))
-          (push (let ((setup-opts (cons `(hook . ,hook) setup-opts)))
-                  (setup-expand body))
-                bodies))
-        (macroexp-progn (nreverse bodies))))
+  (lambda (hooks &rest body)
+    (let (bodies)
+      (dolist (hook (if (listp hooks) hooks (list hooks)))
+        (push (let ((setup-opts (cons `(hook . ,hook) setup-opts)))
+                (setup-expand body))
+              bodies))
+      (macroexp-progn (nreverse bodies))))
   :documentation "Change the HOOK that BODY will use.
 If HOOK is a list, apply BODY to all elements of HOOK."
   :debug '(sexp setup)
   :indent 1)
 
 (setup-define :package
-    (lambda (package)
-      `(unless (package-installed-p ',package)
-         (unless (memq ',package package-archive-contents)
-           (package-refresh-contents))
-         (package-install ',package)))
+  (lambda (package)
+    `(unless (package-installed-p ',package)
+       (unless (memq ',package package-archive-contents)
+         (package-refresh-contents))
+       (package-install ',package)))
   :documentation "Install PACKAGE if it hasn't been installed yet.
 This macro can be used as NAME, and it will replace itself with
 the first PACKAGE."
@@ -401,9 +402,9 @@ the first PACKAGE."
   :shorthand #'cadr)
 
 (setup-define :require
-    (lambda (feature)
-      `(unless (require ',feature nil t)
-         ,(setup-quit)))
+  (lambda (feature)
+    `(unless (require ',feature nil t)
+       ,(setup-quit)))
   :documentation "Try to require FEATURE, or stop evaluating body.
 This macro can be used as NAME, and it will replace itself with
 the first FEATURE."
@@ -411,76 +412,76 @@ the first FEATURE."
   :shorthand #'cadr)
 
 (setup-define :global
-    (lambda (key command)
-      `(global-set-key
-        ,(setup-ensure-kbd key)
-        ,(setup-ensure-function command)))
+  (lambda (key command)
+    `(global-set-key
+      ,(setup-ensure-kbd key)
+      ,(setup-ensure-function command)))
   :documentation "Globally bind KEY to COMMAND."
   :debug '(form sexp)
   :repeatable t)
 
 (setup-define :bind
-    (lambda (key command)
-      `(define-key ,(setup-get 'map)
-         ,(setup-ensure-kbd key)
-         ,(setup-ensure-function command)))
+  (lambda (key command)
+    `(define-key ,(setup-get 'map)
+       ,(setup-ensure-kbd key)
+       ,(setup-ensure-function command)))
   :documentation "Bind KEY to COMMAND in current map."
   :after-loaded t
   :debug '(form sexp)
   :repeatable t)
 
 (setup-define :unbind
-    (lambda (key)
-      `(define-key ,(setup-get 'map)
-         ,(setup-ensure-kbd key)
-         nil))
+  (lambda (key)
+    `(define-key ,(setup-get 'map)
+       ,(setup-ensure-kbd key)
+       nil))
   :documentation "Unbind KEY in current map."
   :after-loaded t
   :debug '(form)
   :repeatable t)
 
 (setup-define :rebind
-    (lambda (key command)
-      `(progn
-         (dolist (key (where-is-internal ',command ,(setup-get 'map)))
-           (define-key ,(setup-get 'map) key nil))
-         (define-key ,(setup-get 'map)
-           ,(setup-ensure-kbd key)
-           ,(setup-ensure-function command))))
+  (lambda (key command)
+    `(progn
+       (dolist (key (where-is-internal ',command ,(setup-get 'map)))
+         (define-key ,(setup-get 'map) key nil))
+       (define-key ,(setup-get 'map)
+         ,(setup-ensure-kbd key)
+         ,(setup-ensure-function command))))
   :documentation "Unbind the current key for COMMAND, and bind it to KEY."
   :after-loaded t
   :debug '(form sexp)
   :repeatable t)
 
 (setup-define :hook
-    (lambda (function)
-      `(add-hook ',(setup-get 'hook) ,(setup-ensure-function function)))
+  (lambda (function)
+    `(add-hook ',(setup-get 'hook) ,(setup-ensure-function function)))
   :documentation "Add FUNCTION to current hook."
   :repeatable t)
 
 (setup-define :hook-into
-    (lambda (mode)
-      `(add-hook ',(let ((name (symbol-name mode)))
-                     (if (string-match-p "-hook\\'" name)
-                         mode
-                       (intern (concat name "-hook"))))
-                 ,(setup-ensure-function (setup-get 'mode))))
+  (lambda (mode)
+    `(add-hook ',(let ((name (symbol-name mode)))
+                   (if (string-match-p "-hook\\'" name)
+                       mode
+                     (intern (concat name "-hook"))))
+               ,(setup-ensure-function (setup-get 'mode))))
   :documentation "Add current mode to HOOK."
   :repeatable t)
 
 (setup-define :option
-    (lambda (name val)
-      (setup-make-setter
-       name val
-       (lambda (name)
-         `(funcall (or (get ',name 'custom-get)
-                       #'symbol-value)
-                   ',name))
-       (lambda (name val)
-         `(progn
-            (custom-load-symbol ',name)
-            (funcall (or (get ',name 'custom-set) #'set-default)
-                     ',name ,val)))))
+  (lambda (name val)
+    (setup-make-setter
+     name val
+     (lambda (name)
+       `(funcall (or (get ',name 'custom-get)
+                     #'symbol-value)
+                 ',name))
+     (lambda (name val)
+       `(progn
+          (custom-load-symbol ',name)
+          (funcall (or (get ',name 'custom-set) #'set-default)
+                   ',name ,val)))))
   :documentation "Set the option NAME to VAL.
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
 will use the car value to modify the behaviour.  These forms are
@@ -505,13 +506,13 @@ therefore not be stored in `custom-set-variables' blocks."
   :repeatable t)
 
 (setup-define :local-set
-    (lambda (name val)
-      (setup-make-setter
-       name val
-       (lambda (name)
-         (if (consp name) (cadr name) name))
-       (lambda (name val)
-         `(add-hook ',(setup-get 'hook) (lambda () (setq-local ,name ,val))))))
+  (lambda (name val)
+    (setup-make-setter
+     name val
+     (lambda (name)
+       (if (consp name) (cadr name) name))
+     (lambda (name val)
+       `(add-hook ',(setup-get 'hook) (lambda () (setq-local ,name ,val))))))
   :documentation "Set the value of NAME to VAL in buffers of the current mode.
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
 will use the car value to modify the behaviour. These forms are
@@ -530,25 +531,25 @@ supported:
   :repeatable t)
 
 (setup-define :local-hook
-    (lambda (hook function)
-      `(add-hook ',(setup-get 'hook)
-                 (lambda ()
-                   (add-hook ',hook ,(setup-ensure-function function) nil t))))
+  (lambda (hook function)
+    `(add-hook ',(setup-get 'hook)
+               (lambda ()
+                 (add-hook ',hook ,(setup-ensure-function function) nil t))))
   :documentation "Add FUNCTION to HOOK only in buffers of the current mode."
   :debug '(symbolp sexp)
   :repeatable t)
 
 (setup-define :also-load
-    (lambda (feature)
-      `(require ',feature))
+  (lambda (feature)
+    `(require ',feature))
   :documentation "Load FEATURE with the current body."
   :after-loaded t
   :repeatable t)
 
 (setup-define :if-package
-    (lambda (package)
-      `(unless (package-installed-p ',package)
-         ,(setup-quit)))
+  (lambda (package)
+    `(unless (package-installed-p ',package)
+       ,(setup-quit)))
   :documentation "If package is not installed, stop evaluating the body.
 This macro can be used as NAME, and it will replace itself with
 the first PACKAGE."
@@ -556,9 +557,9 @@ the first PACKAGE."
   :shorthand #'cadr)
 
 (setup-define :if-feature
-    (lambda (feature)
-      `(unless (featurep ',feature)
-         ,(setup-quit)))
+  (lambda (feature)
+    `(unless (featurep ',feature)
+       ,(setup-quit)))
   :documentation "If FEATURE is not available, stop evaluating the body.
 This macro can be used as NAME, and it will replace itself with
 the first PACKAGE."
@@ -566,23 +567,23 @@ the first PACKAGE."
   :shorthand #'cadr)
 
 (setup-define :only-if
-    (lambda (condition)
-      `(unless ,condition
-         ,(setup-quit)))
+  (lambda (condition)
+    `(unless ,condition
+       ,(setup-quit)))
   :documentation "If CONDITION evaluates to nil, stop evaluating the body."
   :debug '(form)
   :repeatable t)
 
 (setup-define :file-match
-    (lambda (pat)
-      `(add-to-list 'auto-mode-alist (cons ,pat ',(setup-get 'mode))))
+  (lambda (pat)
+    `(add-to-list 'auto-mode-alist (cons ,pat ',(setup-get 'mode))))
   :documentation "Associate the current mode with files that match PAT."
   :debug '(form)
   :repeatable t)
 
 (setup-define :when-loaded
-    (lambda (&rest body)
-      (macroexp-progn body))
+  (lambda (&rest body)
+    (macroexp-progn body))
   :documentation "Evaluate BODY after the current feature has been loaded.
 Avoid using this macro whenever possible, and
 instead choose a more specialized alternative or write one
