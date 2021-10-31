@@ -285,35 +285,36 @@ If RETURN is given, throw that value."
          `#',sexp)
         (sexp)))
 
-(defun setup-make-setter (name val old-val-fn wrap-fn)
-  "Convert NAME and VAL into setter code.
-The function OLD-VAL-FN is used to extract the old value of
-VAL.  The function WRAP-FN combines the transformed values of NAME
-and VAL into one s-expression."
-  (cond ((symbolp name) (funcall wrap-fn name val))
-        ((eq (car-safe name) 'append)
-         (funcall wrap-fn
-                  (cadr name)
-                  (let ((sym (gensym)))
-                    `(let ((,sym ,val)
-                           (list ,(funcall old-val-fn (cadr name))))
-                       (if (member ,sym list)
-                           list
-                         (append list (list ,sym)))))))
-        ((eq (car-safe name) 'prepend)
-         (funcall wrap-fn
-                  (cadr name)
-                  (let ((sym (gensym)))
-                    `(let ((,sym ,val)
-                           (list ,(funcall old-val-fn (cadr name))))
-                       (if (member ,sym list)
-                           list
-                         (cons ,sym list))))))
-        ((eq (car-safe name) 'remove)
-         (funcall wrap-fn
-                  (cadr name)
-                  `(remove ,val ,(funcall old-val-fn (cadr name)))))
-        ((error "Invalid option %S" name))))
+(defun setup-make-setter (old-val-fn wrap-fn)
+  "Return a macro function to generate a setter.
+The function OLD-VAL-FN is used to extract the old value of VAL.
+The function WRAP-FN combines the transformed values of NAME and
+VAL into one s-expression."
+  (lambda (name val)
+    (cond ((symbolp name) (funcall wrap-fn name val))
+          ((eq (car-safe name) 'append)
+           (funcall wrap-fn
+                    (cadr name)
+                    (let ((sym (gensym)))
+                      `(let ((,sym ,val)
+                             (list ,(funcall old-val-fn (cadr name))))
+                         (if (member ,sym list)
+                             list
+                           (append list (list ,sym)))))))
+          ((eq (car-safe name) 'prepend)
+           (funcall wrap-fn
+                    (cadr name)
+                    (let ((sym (gensym)))
+                      `(let ((,sym ,val)
+                             (list ,(funcall old-val-fn (cadr name))))
+                         (if (member ,sym list)
+                             list
+                           (cons ,sym list))))))
+          ((eq (car-safe name) 'remove)
+           (funcall wrap-fn
+                    (cadr name)
+                    `(remove ,val ,(funcall old-val-fn (cadr name)))))
+          ((error "Invalid option %S" name)))))
 
 
 ;;; Default local macros definitions
@@ -479,18 +480,17 @@ The arguments REST are handled as by `:bind'."
   :repeatable t)
 
 (setup-define :option
-  (lambda (name val)
-    (setup-make-setter
-     name val
-     (lambda (name)
-       `(funcall (or (get ',name 'custom-get)
-                     #'symbol-value)
-                 ',name))
-     (lambda (name val)
-       `(progn
-          (custom-load-symbol ',name)
-          (funcall (or (get ',name 'custom-set) #'set-default)
-                   ',name ,val)))))
+  (setup-make-setter
+   (lambda (name)
+     `(funcall (or (get ',name 'custom-get)
+                   #'symbol-value)
+               ',name))
+   (lambda (name val)
+     `(progn
+        (custom-load-symbol ',name)
+        (funcall (or (get ',name 'custom-set) #'set-default)
+                 ',name ,val))))
+
   :documentation "Set the option NAME to VAL.
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
 will use the car value to modify the behaviour.  These forms are
@@ -515,13 +515,11 @@ therefore not be stored in `custom-set-variables' blocks."
   :repeatable t)
 
 (setup-define :local-set
-  (lambda (name val)
-    (setup-make-setter
-     name val
-     (lambda (name)
-       (if (consp name) (cadr name) name))
-     (lambda (name val)
-       `(add-hook ',(setup-get 'hook) (lambda () (setq-local ,name ,val))))))
+  (setup-make-setter
+   (lambda (name)
+     (if (consp name) (cadr name) name))
+   (lambda (name val)
+     `(add-hook ',(setup-get 'hook) (lambda () (setq-local ,name ,val)))))
   :documentation "Set the value of NAME to VAL in buffers of the current mode.
 NAME may be a symbol, or a cons-cell.  If NAME is a cons-cell, it
 will use the car value to modify the behaviour. These forms are
