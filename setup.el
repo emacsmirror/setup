@@ -45,6 +45,7 @@
 ;; - Move macros :hide-mode, :advise, :needs, :if-host and :load-from
 ;;   to EmacsWiki.
 ;; - Revert the indentation spec change for `setup-define'
+;; - Add :bind-into macro
 ;;
 ;;;; Version 1.1.0:
 ;;
@@ -452,6 +453,14 @@ the first FEATURE."
   :after-loaded t
   :debug '(form sexp)
   :repeatable t)
+
+(setup-define :bind-into
+  (lambda (feature &rest rest)
+    `(:with-feature ,feature (:bind ,@rest)))
+  :documentation "Bind into keys into the map of FEATURE.
+The arguments REST are handled as by `:bind'."
+  :debug '(sexp &rest form sexp)
+  :indent 1)
 
 (setup-define :hook
   (lambda (function)
