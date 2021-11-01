@@ -143,7 +143,7 @@ BODY may contain special forms defined by `setup-define', but
 will otherwise just be evaluated as is.
 NAME may also be a macro, if it can provide a symbol."
   (declare (debug (&rest &or [symbolp sexp] form))
-           (indent defun))
+           (indent 1))
   (when (consp name)
     (push name body)
     (let ((shorthand (get (car name) 'setup-shorthand)))
