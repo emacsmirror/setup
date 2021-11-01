@@ -46,6 +46,8 @@
 ;;   to EmacsWiki.
 ;; - Revert the indentation spec change for `setup-define'
 ;; - Add :bind-into macro
+;; - Add :ensure key to `setup-define' to replace
+;;   setup-ensure-... functions
 ;;
 ;;;; Version 1.1.0:
 ;;
@@ -186,7 +188,14 @@ returns a symbol to replace NAME.
 
   :debug SPEC
 A edebug specification, see Info node `(elisp) Specification List'.
-If not given, it is assumed nothing is evaluated."
+If not given, it is assumed nothing is evaluated.
+
+  :ensure SPEC
+
+A list of symbols indicating what kind of argument each parameter
+to FN is.  If the nth parameter is not to be reinterpreted, the
+nth symbol in SPEC should nil.  For key bindings `kbd' and for
+functions `func'.  Any other value is invalid."
   (declare (indent 1))
   ;; NB.: NAME is not required to by a keyword, even though all macros
   ;;      specified on the next page use keywords.  The rationale for
@@ -218,6 +227,30 @@ If not given, it is assumed nothing is evaluated."
                          (while args
                            (let ((rest (nthcdr arity args)))
                              (setf (nthcdr arity args) nil)
+                             (let ((ensure-spec (plist-get opts :ensure)))
+                               (when ensure-spec
+                                 (dotimes (i (length args))
+                                   (let ((ensure (nth i ensure-spec))
+                                         (arg (nth i args)))
+                                     (cond
+                                      ((null ensure)) ;Do not modify argument
+                                      ((eq ensure 'kbd)
+                                       (setf (nth i args)
+                                             (cond
+                                              ((stringp arg) (kbd arg))
+                                              ((symbolp arg) `(kbd ,arg))
+                                              (arg))))
+                                      ((eq ensure 'func)
+                                       (setf (nth i args)
+                                             (cond
+                                              ((eq (car-safe arg) 'function)
+                                               arg)
+                                              ((eq (car-safe arg) 'quote)
+                                               `#',(cadr arg))
+                                              ((symbolp arg)
+                                               `#',arg)
+                                              (arg))))
+                                      ((error "Invalid ensure spec %S" ensure)))))))
                              (push (apply fn args) aggr)
                              (setq args rest)))
                          (macroexp-progn (nreverse aggr)))))))
@@ -268,22 +301,6 @@ settings."
 If RETURN is given, throw that value."
   (push 'need-quit setup-attributes)
   `(throw ',(setup-get 'quit) ,return))
-
-(defun setup-ensure-kbd (sexp)
-  "Attempt to return SEXP as a key binding expression."
-  (cond ((stringp sexp) (kbd sexp))
-        ((symbolp sexp) `(kbd ,sexp))
-        (sexp)))
-
-(defun setup-ensure-function (sexp)
-  "Attempt to return SEXP as a quoted function name."
-  (cond ((eq (car-safe sexp) 'function)
-         sexp)
-        ((eq (car-safe sexp) 'quote)
-         `#',(cadr sexp))
-        ((symbolp sexp)
-         `#',sexp)
-        (sexp)))
 
 (defun setup-make-setter (old-val-fn wrap-fn)
   "Return a macro function to generate a setter.
@@ -415,44 +432,40 @@ the first FEATURE."
 
 (setup-define :global
   (lambda (key command)
-    `(global-set-key
-      ,(setup-ensure-kbd key)
-      ,(setup-ensure-function command)))
+    `(global-set-key ,key ,command))
   :documentation "Globally bind KEY to COMMAND."
   :debug '(form sexp)
+  :ensure '(kbd func)
   :repeatable t)
 
 (setup-define :bind
   (lambda (key command)
-    `(define-key ,(setup-get 'map)
-       ,(setup-ensure-kbd key)
-       ,(setup-ensure-function command)))
+    `(define-key ,(setup-get 'map) ,key ,command))
   :documentation "Bind KEY to COMMAND in current map."
   :after-loaded t
   :debug '(form sexp)
+  :ensure '(kbd func)
   :repeatable t)
 
 (setup-define :unbind
   (lambda (key)
-    `(define-key ,(setup-get 'map)
-       ,(setup-ensure-kbd key)
-       nil))
+    `(define-key ,(setup-get 'map) ,key nil))
   :documentation "Unbind KEY in current map."
   :after-loaded t
   :debug '(form)
+  :ensure '(kbd)
   :repeatable t)
 
 (setup-define :rebind
   (lambda (key command)
     `(progn
        (dolist (key (where-is-internal ',command ,(setup-get 'map)))
-         (define-key ,(setup-get 'map) key nil))
-       (define-key ,(setup-get 'map)
-         ,(setup-ensure-kbd key)
-         ,(setup-ensure-function command))))
+         (define-key ,(setup-get 'map) ,key nil))
+       (define-key ,(setup-get 'map) ,key ,command)))
   :documentation "Unbind the current key for COMMAND, and bind it to KEY."
   :after-loaded t
   :debug '(form sexp)
+  :ensure '(kbd func)
   :repeatable t)
 
 (setup-define :bind-into
@@ -465,8 +478,9 @@ The arguments REST are handled as by `:bind'."
 
 (setup-define :hook
   (lambda (function)
-    `(add-hook ',(setup-get 'hook) ,(setup-ensure-function function)))
+    `(add-hook ',(setup-get 'hook) ,function))
   :documentation "Add FUNCTION to current hook."
+  :ensure '(func)
   :repeatable t)
 
 (setup-define :hook-into
@@ -475,7 +489,7 @@ The arguments REST are handled as by `:bind'."
                    (if (string-match-p "-hook\\'" name)
                        mode
                      (intern (concat name "-hook"))))
-               ,(setup-ensure-function (setup-get 'mode))))
+               #',(setup-get 'mode)))
   :documentation "Add current mode to HOOK."
   :repeatable t)
 
@@ -541,9 +555,10 @@ supported:
   (lambda (hook function)
     `(add-hook ',(setup-get 'hook)
                (lambda ()
-                 (add-hook ',hook ,(setup-ensure-function function) nil t))))
+                 (add-hook ',hook ,function nil t))))
   :documentation "Add FUNCTION to HOOK only in buffers of the current mode."
   :debug '(symbolp sexp)
+  :ensure '(nil func)
   :repeatable t)
 
 (setup-define :also-load
