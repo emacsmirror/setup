@@ -75,7 +75,7 @@ is used to retrieve the current context.")
 (defvar setup-attributes '()
   "A list symbols used to store a state during macro processing.
 The list is populated during macro expansion, and may modify the
-behaviour of the functions in `setup-modifier-list'..")
+behaviour of the functions in `setup-modifier-list'.")
 
 (defun setup-wrap-to-catch-quits (body _name)
   "Wrap BODY in a catch block if necessary.
