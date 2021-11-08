@@ -49,6 +49,7 @@
 ;; - Add :bind-into macro
 ;; - Add :ensure key to `setup-define' to replace
 ;;   the deprecated setup-ensure-... functions
+;; - Add `setup-bind' macro to simplify context modification.
 ;;
 ;;;; Version 1.1.0:
 ;;
@@ -297,6 +298,23 @@ This must be used in context-setting macros (`:with-feature',
 settings."
   (macroexpand-all (macroexp-progn body) setup-macros))
 
+(defmacro setup-bind (body &rest vars)
+  "Add VARS to `setup-opts' in BODY.
+Each entry in VARS is a list of the form (VAR VAL), comparable to
+`let'.  This macro makes sure that the BODY is expanded correctly
+so that it can make use of the new bindings in VARS."
+  (declare (debug let) (indent 1))
+  ;; The macro modifies VARS in place, inserting unquotes in the right
+  ;; places to convert a `let'-formed list into a alist.  The unquoted
+  ;; values are then handled by the backquote inserted by the macro.
+  ;; The list this generates is destructively concatenated to the
+  ;; beginning of setup-ops, which is safe because backquoting expands
+  ;; to a new list allocation.
+  (dolist (var vars)
+    (setcdr var (list '\, (cadr var))))
+  `(let ((setup-opts (nconc ,(list '\` vars) setup-opts)))
+     (setup-expand ,body)))
+
 (defun setup-quit (&optional return)
   "Generate code to quit evaluation.
 If RETURN is given, throw that value."
@@ -342,19 +360,18 @@ VAL into one s-expression."
     (let (bodies)
       (dolist (feature (if (listp features) features (list features)))
         (push (if feature
-                  (let* ((mode (if (string-match-p "-mode\\'" (symbol-name feature))
-                                   feature
-                                 (intern (format "%s-mode" feature))))
-                         (setup-opts `((feature . ,feature)
-                                       (mode . ,(or (get features 'setup-mode) mode))
-                                       (hook . ,(or (get features 'setup-hook)
-                                                    (get mode 'setup-hook)
-                                                    (intern (format "%s-hook" mode))))
-                                       (map . ,(or (get features 'setup-map)
-                                                   (get mode 'setup-map)
-                                                   (intern (format "%s-map" mode))))
-                                       ,@setup-opts)))
-                    (setup-expand body))
+                  (let ((mode (if (string-match-p "-mode\\'" (symbol-name feature))
+                                  feature
+                                (intern (format "%s-mode" feature)))))
+                    (setup-bind body
+                      (feature feature)
+                      (mode (or (get features 'setup-mode) mode))
+                      (hook (or (get features 'setup-hook)
+                                (get mode 'setup-hook)
+                                (intern (format "%s-hook" mode))))
+                      (map (or (get features 'setup-map)
+                               (get mode 'setup-map)
+                               (intern (format "%s-map" mode))))))
                 body)
               bodies))
       (macroexp-progn (if features (nreverse bodies) body))))
@@ -369,13 +386,12 @@ If FEATURE is a list, apply BODY to all elements of FEATURE."
   (lambda (modes &rest body)
     (let (bodies)
       (dolist (mode (if (listp modes) modes (list modes)))
-        (push (let ((setup-opts `((mode . ,mode)
-                                  (hook . ,(or (get mode 'setup-hook)
-                                               (intern (format "%s-hook" mode))))
-                                  (map . ,(or (get mode 'setup-map)
-                                              (intern (format "%s-map" mode))))
-                                  ,@setup-opts)))
-                (setup-expand body))
+        (push (setup-bind body
+                (mode mode)
+                (hook (or (get mode 'setup-hook)
+                          (intern (format "%s-hook" mode))))
+                (map (or (get mode 'setup-map)
+                         (intern (format "%s-map" mode)))))
               bodies))
       (macroexp-progn (nreverse bodies))))
   :documentation "Change the MODE that BODY is configuring.
@@ -387,8 +403,7 @@ If MODE is a list, apply BODY to all elements of MODE."
   (lambda (maps &rest body)
     (let (bodies)
       (dolist (map (if (listp maps) maps (list maps)))
-        (push (let ((setup-opts (cons `(map . ,map) setup-opts)))
-                (setup-expand body))
+        (push (setup-bind body (map map))
               bodies))
       (macroexp-progn (nreverse bodies))))
   :documentation "Change the MAP that BODY will bind to.
@@ -400,8 +415,7 @@ If MAP is a list, apply BODY to all elements of MAP."
   (lambda (hooks &rest body)
     (let (bodies)
       (dolist (hook (if (listp hooks) hooks (list hooks)))
-        (push (let ((setup-opts (cons `(hook . ,hook) setup-opts)))
-                (setup-expand body))
+        (push (setup-bind body (hook hook))
               bodies))
       (macroexp-progn (nreverse bodies))))
   :documentation "Change the HOOK that BODY will use.
