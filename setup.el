@@ -107,7 +107,7 @@ Do not modify this variable by hand.  Instead use
 `setup-define.'")
 
 ;;;###autoload
-(defun setup-make-docstring ()
+(defun setup--make-docstring ()
   "Return a docstring for `setup'."
   (with-temp-buffer
     (insert (documentation (symbol-function 'setup) 'raw)
@@ -160,7 +160,7 @@ NAME may also be a macro, if it can provide a symbol."
     body))
 
 ;;;###autoload
-(put 'setup 'function-documentation '(setup-make-docstring))
+(put 'setup 'function-documentation '(setup--make-docstring))
 
 (defun setup-define (name fn &rest opts)
   "Define `setup'-local macro NAME using function FN.
@@ -272,13 +272,13 @@ functions `func'.  Any other value is invalid."
                  (cons '&rest spec))
                 (t spec)))))
 
-(defun setup-xref-def-function (symbol)
+(defun setup--xref-def-function (symbol)
   "Return an elisp xref location for SYMBOL."
   (and (assq symbol setup-macros)
        (let ((file (get symbol 'setup-definition-file)))
          (list (elisp--xref-make-xref nil symbol file)))))
 
-(add-to-list 'elisp-xref-find-def-functions
+(add-to-list 'elisp--xref-find-def-functions
              #'setup-xref-def-function)
 
 
