@@ -278,8 +278,8 @@ functions `func'.  Any other value is invalid."
        (let ((file (get symbol 'setup-definition-file)))
          (list (elisp--xref-make-xref nil symbol file)))))
 
-(add-to-list 'elisp--xref-find-def-functions
-             #'setup-xref-def-function)
+(add-to-list 'elisp-xref-find-def-functions
+             #'setup--xref-def-function)
 
 
 ;;; Common utility functions for local macros
