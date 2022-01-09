@@ -441,8 +441,7 @@ If HOOK is a list, apply BODY to all elements of HOOK."
          (package-refresh-contents))
        (package-install ',package)))
   :documentation "Install PACKAGE if it hasn't been installed yet.
-This macro can be used as NAME, and it will replace itself with
-the first PACKAGE."
+The first PACKAGE can be used to deduce the feature context."
   :repeatable t
   :shorthand #'cadr)
 
@@ -451,8 +450,7 @@ the first PACKAGE."
     `(unless (require ',feature nil t)
        ,(setup-quit)))
   :documentation "Try to require FEATURE, or stop evaluating body.
-This macro can be used as NAME, and it will replace itself with
-the first FEATURE."
+The first FEATURE can be used to deduce the feature context."
   :repeatable t
   :shorthand #'cadr)
 
@@ -601,8 +599,7 @@ supported:
     `(unless (package-installed-p ',package)
        ,(setup-quit)))
   :documentation "If package is not installed, stop evaluating the body.
-This macro can be used as NAME, and it will replace itself with
-the first PACKAGE."
+The first PACKAGE can be used to deduce the feature context."
   :repeatable t
   :shorthand #'cadr)
 
@@ -611,8 +608,7 @@ the first PACKAGE."
     `(unless (featurep ',feature)
        ,(setup-quit)))
   :documentation "If FEATURE is not available, stop evaluating the body.
-This macro can be used as NAME, and it will replace itself with
-the first PACKAGE."
+The first FEATURE can be used to deduce the feature context."
   :repeatable t
   :shorthand #'cadr)
 
