@@ -629,6 +629,22 @@ yourself."
   :after-loaded t
   :indent 0)
 
+(setup-define :and
+  (lambda (&rest conds)
+    `(if (and ,@(butlast conds))
+         ,@(last conds)
+       ,(setup-quit)))
+  :documentation "Abort evaluation of CONDS are not all true.
+The expression of the last condition is used to deduce the
+feature context."
+  :shorthand
+  (lambda (head)
+    (unless (cdr head)
+      (error ":and requires at least one condition"))
+    (let ((shorthand (get (caar (last head)) 'setup-shorthand)))
+      (and shorthand (funcall shorthand (car (last head))))))
+  :debug '(setup))
+
 
 ;;; Obsoleted code
 
