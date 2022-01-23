@@ -484,9 +484,11 @@ the first FEATURE."
   :repeatable t)
 
 (setup-define :bind-into
-  (lambda (feature &rest rest)
-    `(:with-feature ,feature (:bind ,@rest)))
-  :documentation "Bind into keys into the map of FEATURE.
+  (lambda (feature-or-map &rest rest)
+    (if (string-match-p "-map\\'" (symbol-name feature-or-map))
+        `(:with-map ,feature-or-map (:bind ,@rest))
+      `(:with-feature ,feature-or-map (:bind ,@rest))))
+  :documentation "Bind into keys into the map of FEATURE-OR-MAP.
 The arguments REST are handled as by `:bind'."
   :debug '(sexp &rest form sexp)
   :indent 1)
