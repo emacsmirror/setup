@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021  Free Software Foundation, Inc.
 
 ;; Author: Philip Kaludercic <philipk@posteo.net>
-;; Maintainer: Philip Kaludercic <philipk@posteo.net>
+;; Maintainer: Philip Kaludercic <~pkal/public-inbox@lists.sr.ht>
 ;; Version: 1.2.0
 ;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: lisp, local
@@ -280,6 +280,17 @@ functions `func'.  Any other value is invalid."
 
 (add-to-list 'elisp-xref-find-def-functions
              #'setup--xref-def-function)
+
+(defun setup--describe-macro (symbol)
+  ""
+  (when (assq symbol setup-macros)
+    (let ((start (point)))
+      (insert (or (get symbol 'setup-documentation)
+                  "No documentation."))
+      (fill-region start (point)))))
+
+(add-hook 'help-fns-describe-function-functions
+          #'setup--describe-macro)
 
 
 ;;; Common utility functions for local macros
