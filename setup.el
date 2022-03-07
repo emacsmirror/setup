@@ -281,17 +281,6 @@ functions `func'.  Any other value is invalid."
 (add-to-list 'elisp-xref-find-def-functions
              #'setup--xref-def-function)
 
-(defun setup--describe-macro (symbol)
-  ""
-  (when (assq symbol setup-macros)
-    (let ((start (point)))
-      (insert (or (get symbol 'setup-documentation)
-                  "No documentation."))
-      (fill-region start (point)))))
-
-(add-hook 'help-fns-describe-function-functions
-          #'setup--describe-macro)
-
 
 ;;; Common utility functions for local macros
 
