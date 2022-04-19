@@ -366,6 +366,7 @@ VAL into one s-expression."
                     (setup-bind body
                       (feature feature)
                       (mode (or (get features 'setup-mode) mode))
+                      (func (or (get features 'setup-func) mode))
                       (hook (or (get features 'setup-hook)
                                 (get mode 'setup-hook)
                                 (intern (format "%s-hook" mode))))
@@ -381,6 +382,7 @@ This macro also:
   FEATURE, unless it already ends with \"-mode\"
 - Declares a current hook by appending \"-hook\" to the mode
 - Declares a current map by appending \"-map\" to the mode
+- Declares a current function that has the same name as the mode
 If FEATURE is a list, apply BODY to all elements of FEATURE."
   :debug '([&or ([&rest sexp]) sexp] setup)
   :indent 1)
@@ -391,6 +393,8 @@ If FEATURE is a list, apply BODY to all elements of FEATURE."
       (dolist (mode (if (listp modes) modes (list modes)))
         (push (setup-bind body
                 (mode mode)
+                (func (or (get mode 'setup-func)
+                          mode))
                 (hook (or (get mode 'setup-hook)
                           (intern (format "%s-hook" mode))))
                 (map (or (get mode 'setup-map)
@@ -401,7 +405,8 @@ If FEATURE is a list, apply BODY to all elements of FEATURE."
 If MODE is a list, apply BODY to all elements of MODE.
 This macro also:
 - Declares a current hook by appending \"-hook\" to the mode
-- Declares a current map by appending \"-map\" to the mode"
+- Declares a current map by appending \"-map\" to the mode
+- Declares a current function that has the same name as the mode"
   :debug '([&or ([&rest sexp]) sexp] setup)
   :indent 1)
 
@@ -427,6 +432,21 @@ If MAP is a list, apply BODY to all elements of MAP."
   :documentation "Change the HOOK that BODY will use.
 If HOOK is a list, apply BODY to all elements of HOOK."
   :debug '([&or ([&rest sexp]) sexp] setup)
+  :indent 1)
+
+(setup-define :with-function
+  (lambda (functions &rest body)
+    (let (bodies)
+      (dolist (func (if (listp functions) functions (list functions)))
+        (let ((fn (if (memq (car-safe func) '(quote function))
+                      (cadr func)
+                    func)))
+          (push (setup-bind body (func fn))
+                bodies)))
+      (macroexp-progn (nreverse bodies))))
+  :documentation "Change the FUNCTION that BODY will use.
+If FUNCTION is a list, apply BODY to all elements of FUNCTION."
+  :debug '(sexp setup)
   :indent 1)
 
 (setup-define :package
@@ -510,8 +530,8 @@ The arguments REST are handled as by `:bind'."
                    (if (string-match-p "-hook\\'" name)
                        mode
                      (intern (concat name "-hook"))))
-               #',(setup-get 'mode)))
-  :documentation "Add current mode to HOOK."
+               #',(setup-get 'func)))
+  :documentation "Add current function to HOOK."
   :repeatable t)
 
 (setup-define :option
