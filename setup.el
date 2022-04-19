@@ -376,8 +376,11 @@ VAL into one s-expression."
               bodies))
       (macroexp-progn (if features (nreverse bodies) body))))
   :documentation "Change the FEATURE that BODY is configuring.
-This macro also declares a current mode by appending \"-mode\" to
-FEATURE, unless it already ends with \"-mode\".
+This macro also:
+- Declares a current mode by appending \"-mode\" to
+  FEATURE, unless it already ends with \"-mode\"
+- Declares a current hook by appending \"-hook\" to the mode
+- Declares a current map by appending \"-map\" to the mode
 If FEATURE is a list, apply BODY to all elements of FEATURE."
   :debug '(sexp setup)
   :indent 1)
@@ -395,7 +398,10 @@ If FEATURE is a list, apply BODY to all elements of FEATURE."
               bodies))
       (macroexp-progn (nreverse bodies))))
   :documentation "Change the MODE that BODY is configuring.
-If MODE is a list, apply BODY to all elements of MODE."
+If MODE is a list, apply BODY to all elements of MODE.
+This macro also:
+- Declares a current hook by appending \"-hook\" to the mode
+- Declares a current map by appending \"-map\" to the mode"
   :debug '(sexp setup)
   :indent 1)
 
