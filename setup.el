@@ -382,7 +382,7 @@ This macro also:
 - Declares a current hook by appending \"-hook\" to the mode
 - Declares a current map by appending \"-map\" to the mode
 If FEATURE is a list, apply BODY to all elements of FEATURE."
-  :debug '(sexp setup)
+  :debug '([&or ([&rest sexp]) sexp] setup)
   :indent 1)
 
 (setup-define :with-mode
@@ -402,7 +402,7 @@ If MODE is a list, apply BODY to all elements of MODE.
 This macro also:
 - Declares a current hook by appending \"-hook\" to the mode
 - Declares a current map by appending \"-map\" to the mode"
-  :debug '(sexp setup)
+  :debug '([&or ([&rest sexp]) sexp] setup)
   :indent 1)
 
 (setup-define :with-map
@@ -414,7 +414,7 @@ This macro also:
       (macroexp-progn (nreverse bodies))))
   :documentation "Change the MAP that BODY will bind to.
 If MAP is a list, apply BODY to all elements of MAP."
-  :debug '(sexp setup)
+  :debug '([&or ([&rest sexp]) sexp] setup)
   :indent 1)
 
 (setup-define :with-hook
@@ -426,7 +426,7 @@ If MAP is a list, apply BODY to all elements of MAP."
       (macroexp-progn (nreverse bodies))))
   :documentation "Change the HOOK that BODY will use.
 If HOOK is a list, apply BODY to all elements of HOOK."
-  :debug '(sexp setup)
+  :debug '([&or ([&rest sexp]) sexp] setup)
   :indent 1)
 
 (setup-define :package
