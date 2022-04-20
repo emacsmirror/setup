@@ -154,7 +154,7 @@ NAME may also be a macro, if it can provide a symbol."
                 (if (assq :with-feature setup-macros)
                     `(:with-feature ,name ,@body)
                   (macroexp-progn body))
-                setup-macros))
+                (append setup-macros macroexpand-all-environment)))
     (dolist (mod-fn setup-modifier-list)
       (setq body (funcall mod-fn body name)))
     body))
