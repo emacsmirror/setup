@@ -39,10 +39,10 @@
 
 ;;;; Version 1.3.0
 
-;; - Add new `:and' macro
+;; - Add new `:and' macro.
 ;; - Add new `:with-function' macro and have `:hook-into' use
 ;;   the context function instead of the context mode.
-;; - Improve `:bind-into' handling of maps
+;; - Improve `:bind-into' handling of maps.
 
 ;;;; Version 1.2.0
 
