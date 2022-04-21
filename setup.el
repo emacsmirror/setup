@@ -37,8 +37,15 @@
 
 ;;; News:
 
+;;;; Version 1.3.0
+
+;; - Add new `:and' macro
+;; - Add new `:with-function' macro and have `:hook-into' use
+;;   the context function instead of the context mode.
+;; - Improve `:bind-into' handling of maps
+
 ;;;; Version 1.2.0
-;;
+
 ;; - Remove `setup-wrap-to-demote-errors' from `setup-modifier-list'
 ;; - Pull `setup-expand-local-macros'  back into `setup'
 ;; - Let `:with-feature' and `:with-mode' check symbol properties to
@@ -50,9 +57,9 @@
 ;; - Add :ensure key to `setup-define' to replace
 ;;   the deprecated setup-ensure-... functions
 ;; - Add `setup-bind' macro to simplify context modification.
-;;
+
 ;;;; Version 1.1.0:
-;;
+
 ;; - Fix quoting error in :file-match definition
 ;; - Remove unnecessary check for lexical binding
 ;; - Change `setup-define' indentation
