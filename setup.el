@@ -1,9 +1,9 @@
 ;;; setup.el --- Helpful Configuration Macro    -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021  Free Software Foundation, Inc.
+;; Copyright (C) 2021, 2022  Free Software Foundation, Inc.
 
 ;; Author: Philip Kaludercic <philipk@posteo.net>
-;; Maintainer: Philip Kaludercic <philipk@posteo.net>
+;; Maintainer: Philip Kaludercic <~pkal/public-inbox@lists.sr.ht>
 ;; Version: 1.2.0
 ;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: lisp, local
@@ -37,8 +37,15 @@
 
 ;;; News:
 
+;;;; Version 1.3.0
+
+;; - Add new `:and' macro.
+;; - Add new `:with-function' macro and have `:hook-into' use
+;;   the context function instead of the context mode (Earl Hyatt)
+;; - Improve `:bind-into' handling of maps.
+
 ;;;; Version 1.2.0
-;;
+
 ;; - Remove `setup-wrap-to-demote-errors' from `setup-modifier-list'
 ;; - Pull `setup-expand-local-macros'  back into `setup'
 ;; - Let `:with-feature' and `:with-mode' check symbol properties to
@@ -50,9 +57,9 @@
 ;; - Add :ensure key to `setup-define' to replace
 ;;   the deprecated setup-ensure-... functions
 ;; - Add `setup-bind' macro to simplify context modification.
-;;
+
 ;;;; Version 1.1.0:
-;;
+
 ;; - Fix quoting error in :file-match definition
 ;; - Remove unnecessary check for lexical binding
 ;; - Change `setup-define' indentation
@@ -154,7 +161,7 @@ NAME may also be a macro, if it can provide a symbol."
                 (if (assq :with-feature setup-macros)
                     `(:with-feature ,name ,@body)
                   (macroexp-progn body))
-                setup-macros))
+                (append setup-macros macroexpand-all-environment)))
     (dolist (mod-fn setup-modifier-list)
       (setq body (funcall mod-fn body name)))
     body))
@@ -366,6 +373,7 @@ VAL into one s-expression."
                     (setup-bind body
                       (feature feature)
                       (mode (or (get features 'setup-mode) mode))
+                      (func (or (get features 'setup-func) mode))
                       (hook (or (get features 'setup-hook)
                                 (get mode 'setup-hook)
                                 (intern (format "%s-hook" mode))))
@@ -376,10 +384,14 @@ VAL into one s-expression."
               bodies))
       (macroexp-progn (if features (nreverse bodies) body))))
   :documentation "Change the FEATURE that BODY is configuring.
-This macro also declares a current mode by appending \"-mode\" to
-FEATURE, unless it already ends with \"-mode\".
+This macro also:
+- Declares a current mode by appending \"-mode\" to
+  FEATURE, unless it already ends with \"-mode\"
+- Declares a current hook by appending \"-hook\" to the mode
+- Declares a current map by appending \"-map\" to the mode
+- Declares a current function that has the same name as the mode
 If FEATURE is a list, apply BODY to all elements of FEATURE."
-  :debug '(sexp setup)
+  :debug '([&or ([&rest sexp]) sexp] setup)
   :indent 1)
 
 (setup-define :with-mode
@@ -388,6 +400,8 @@ If FEATURE is a list, apply BODY to all elements of FEATURE."
       (dolist (mode (if (listp modes) modes (list modes)))
         (push (setup-bind body
                 (mode mode)
+                (func (or (get mode 'setup-func)
+                          mode))
                 (hook (or (get mode 'setup-hook)
                           (intern (format "%s-hook" mode))))
                 (map (or (get mode 'setup-map)
@@ -395,8 +409,12 @@ If FEATURE is a list, apply BODY to all elements of FEATURE."
               bodies))
       (macroexp-progn (nreverse bodies))))
   :documentation "Change the MODE that BODY is configuring.
-If MODE is a list, apply BODY to all elements of MODE."
-  :debug '(sexp setup)
+If MODE is a list, apply BODY to all elements of MODE.
+This macro also:
+- Declares a current hook by appending \"-hook\" to the mode
+- Declares a current map by appending \"-map\" to the mode
+- Declares a current function that has the same name as the mode"
+  :debug '([&or ([&rest sexp]) sexp] setup)
   :indent 1)
 
 (setup-define :with-map
@@ -408,7 +426,7 @@ If MODE is a list, apply BODY to all elements of MODE."
       (macroexp-progn (nreverse bodies))))
   :documentation "Change the MAP that BODY will bind to.
 If MAP is a list, apply BODY to all elements of MAP."
-  :debug '(sexp setup)
+  :debug '([&or ([&rest sexp]) sexp] setup)
   :indent 1)
 
 (setup-define :with-hook
@@ -420,6 +438,21 @@ If MAP is a list, apply BODY to all elements of MAP."
       (macroexp-progn (nreverse bodies))))
   :documentation "Change the HOOK that BODY will use.
 If HOOK is a list, apply BODY to all elements of HOOK."
+  :debug '([&or ([&rest sexp]) sexp] setup)
+  :indent 1)
+
+(setup-define :with-function
+  (lambda (functions &rest body)
+    (let (bodies)
+      (dolist (func (if (listp functions) functions (list functions)))
+        (let ((fn (if (memq (car-safe func) '(quote function))
+                      (cadr func)
+                    func)))
+          (push (setup-bind body (func fn))
+                bodies)))
+      (macroexp-progn (nreverse bodies))))
+  :documentation "Change the FUNCTION that BODY will use.
+If FUNCTION is a list, apply BODY to all elements of FUNCTION."
   :debug '(sexp setup)
   :indent 1)
 
@@ -482,9 +515,11 @@ The first FEATURE can be used to deduce the feature context."
   :repeatable t)
 
 (setup-define :bind-into
-  (lambda (feature &rest rest)
-    `(:with-feature ,feature (:bind ,@rest)))
-  :documentation "Bind into keys into the map of FEATURE.
+  (lambda (feature-or-map &rest rest)
+    (if (string-match-p "-map\\'" (symbol-name feature-or-map))
+        `(:with-map ,feature-or-map (:bind ,@rest))
+      `(:with-feature ,feature-or-map (:bind ,@rest))))
+  :documentation "Bind into keys into the map of FEATURE-OR-MAP.
 The arguments REST are handled as by `:bind'."
   :debug '(sexp &rest form sexp)
   :indent 1)
@@ -502,8 +537,8 @@ The arguments REST are handled as by `:bind'."
                    (if (string-match-p "-hook\\'" name)
                        mode
                      (intern (concat name "-hook"))))
-               #',(setup-get 'mode)))
-  :documentation "Add current mode to HOOK."
+               #',(setup-get 'func)))
+  :documentation "Add current function to HOOK."
   :repeatable t)
 
 (setup-define :option
