@@ -22,9 +22,9 @@ initialization file can be byte-compiled more efficiently.
 Bugs
 ----
 
-Bugs or patches can be submitted to my [public inbox][mail] or via the
-[GitHub mirror][github].  Note that non-trivial contributions require
-a [copyright assignment][ca] to the FSF.
+Bugs or patches can be submitted to my [public inbox][mail].  Note
+that non-trivial contributions require a [copyright assignment][ca] to
+the FSF.
 
 This package is still young, so wishes, impressions and criticism are
 very appreciated. If you have anything to say, feel free to send an
@@ -38,6 +38,5 @@ Copying
 [ewiki]: https://www.emacswiki.org/emacs/SetupEl
 [elpa]: http://elpa.gnu.org/packages/setup.html
 [mail]: https://lists.sr.ht/~pkal/public-inbox
-[github]: https://github.com/phikal/setup.el
 [ca]: https://www.gnu.org/software/emacs/manual/html_node/emacs/Copyright-Assignment.html#Copyright-Assignment
 [gpl3]: https://www.gnu.org/licenses/gpl-3.0.en.html
