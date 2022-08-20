@@ -129,7 +129,9 @@ Do not modify this variable by hand.  Instead use
               "that is immediately evaluated.")
       (fill-paragraph)
       (dolist (sym (sort (mapcar #'car setup-macros) #'string-lessp))
-        (newline 2)
+        (if (fboundp 'make-separator-line)
+            (insert "\n" (make-separator-line) "\n")
+          (newline 2))
         (let ((sig (mapcar
                     (lambda (arg)
                       (if (string-match "\\`&" (symbol-name arg))
