@@ -678,27 +678,6 @@ feature context."
       (and shorthand (funcall shorthand (car (last head))))))
   :debug '(setup))
 
-
-;;; Obsoleted code
-
-(defun setup-ensure-kbd (sexp)
-  "Attempt to return SEXP as a key binding expression."
-  (cond ((stringp sexp) (kbd sexp))
-        ((symbolp sexp) `(kbd ,sexp))
-        (sexp)))
-(make-obsolete 'setup-ensure-kbd "Use :ensure keyword instead" "1.2.0")
-
-(defun setup-ensure-function (sexp)
-  "Attempt to return SEXP as a quoted function name."
-  (cond ((eq (car-safe sexp) 'function)
-         sexp)
-        ((eq (car-safe sexp) 'quote)
-         `#',(cadr sexp))
-        ((symbolp sexp)
-         `#',sexp)
-        (sexp)))
-(make-obsolete 'setup-ensure-function "Use :ensure keyword instead" "1.2.0")
-
 (provide 'setup)
 
 ;;; setup.el ends here
