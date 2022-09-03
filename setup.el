@@ -664,9 +664,7 @@ yourself."
 
 (setup-define :and
   (lambda (&rest conds)
-    `(if (and ,@(butlast conds))
-         ,@(last conds)
-       ,(setup-quit)))
+    `(or (and ,@conds) ,(setup-quit)))
   :documentation "Abort evaluation of CONDS are not all true.
 The expression of the last condition is used to deduce the
 feature context."
@@ -674,8 +672,12 @@ feature context."
   (lambda (head)
     (unless (cdr head)
       (error ":and requires at least one condition"))
-    (let ((shorthand (get (caar (last head)) 'setup-shorthand)))
-      (and shorthand (funcall shorthand (car (last head))))))
+    (let ((tail (car (last head))))
+      (cond
+       ((symbolp tail) tail)
+       ((consp tail)
+        (let ((shorthand (get (car tail) 'setup-shorthand)))
+          (and shorthand (funcall shorthand tail)))))))
   :debug '(setup))
 
 (provide 'setup)
