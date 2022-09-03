@@ -664,7 +664,9 @@ yourself."
 
 (setup-define :and
   (lambda (&rest conds)
-    `(or (and ,@conds) ,(setup-quit)))
+    `(if (and ,@(butlast conds))
+         ,@(last conds)
+       ,(setup-quit)))
   :documentation "Abort evaluation of CONDS are not all true.
 The expression of the last condition is used to deduce the
 feature context."
