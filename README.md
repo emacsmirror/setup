@@ -1,9 +1,9 @@
 Helpful Configuration Macro
 ===========================
 
-Find here the source for shell-command+.el, that defines the `setup`
-macro.  This simplifies repetitive configuration patterns, by
-providing context-sensitive local macros in `setup` bodies.
+Find here the source for setup.el, that defines the `setup` macro.
+This simplifies repetitive configuration patterns, by providing
+context-sensitive local macros in `setup` bodies.
 
 This definition is rather terse, but describes the package and the
 main macro pretty well.  If you are interested in more details and
