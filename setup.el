@@ -4,7 +4,7 @@
 
 ;; Author: Philip Kaludercic <philipk@posteo.net>
 ;; Maintainer: Philip Kaludercic <~pkal/public-inbox@lists.sr.ht>
-;; Version: 1.3.0
+;; Version: 1.3.1
 ;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: lisp, local
 ;; URL: https://git.sr.ht/~pkal/setup
@@ -37,36 +37,10 @@
 
 ;;; News:
 
-;;;; Version 1.3.0
+;;;; Version 1.3.1 (bug fix release)
 
-;; - Add new `:and' macro.
-;; - Add new `:with-function' macro and have `:hook-into' use
-;;   the context function instead of the context mode (Earl Hyatt)
-;; - Improve `:bind-into' handling of maps.
-
-;;;; Version 1.2.0
-
-;; - Remove `setup-wrap-to-demote-errors' from `setup-modifier-list'
-;; - Pull `setup-expand-local-macros'  back into `setup'
-;; - Let `:with-feature' and `:with-mode' check symbol properties to
-;;   improve context-setting guesses.
-;; - Move macros :hide-mode, :advise, :needs, :if-host and :load-from
-;;   to EmacsWiki.
-;; - Revert the indentation spec change for `setup-define'
-;; - Add :bind-into macro
-;; - Add :ensure key to `setup-define' to replace
-;;   the deprecated setup-ensure-... functions
-;; - Add `setup-bind' macro to simplify context modification.
-
-;;;; Version 1.1.0:
-
-;; - Fix quoting error in :file-match definition
-;; - Remove unnecessary check for lexical binding
-;; - Change `setup-define' indentation
-;; - Handle multiple expressions in :when-loaded
-;; - Improvements to setup docstring
-;; - Wrap `setup' forms with `with-demoted-errors'
-;; - Allow `setup' to be extended using `setup-modifier-list'
+;; - Fix `:and' implementation.
+;; - Make `setup-bind' non-destructive
 
 ;;; Code:
 
