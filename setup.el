@@ -313,15 +313,15 @@ Each entry in VARS is a list of the form (VAR VAL), comparable to
 `let'.  This macro makes sure that the BODY is expanded correctly
 so that it can make use of the new bindings in VARS."
   (declare (debug let) (indent 1))
-  ;; The macro modifies VARS in place, inserting unquotes in the right
-  ;; places to convert a `let'-formed list into a alist.  The unquoted
-  ;; values are then handled by the backquote inserted by the macro.
-  ;; The list this generates is destructively concatenated to the
-  ;; beginning of setup-ops, which is safe because backquoting expands
-  ;; to a new list allocation.
-  (dolist (var vars)
-    (setcdr var (list '\, (cadr var))))
-  `(let ((setup-opts (nconc ,(list '\` vars) setup-opts)))
+  `(let ((setup-opts (append
+                      (list
+                       ,@(mapcar
+                          (lambda (bind)
+                            (list 'cons
+                                  (list 'quote (car bind))
+                                  (cadr bind)))
+                          vars))
+                      setup-opts)))
      (setup-expand ,body)))
 
 (defun setup-quit (&optional return)
