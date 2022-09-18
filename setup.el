@@ -319,6 +319,18 @@ VAL into one s-expression."
                          (if (member ,sym list)
                              list
                            (append list (list ,sym)))))))
+          ((eq (car-safe name) 'append*)
+           (funcall wrap-fn
+                    (cadr name)
+                    (let ((sym (gensym))
+                          (i (gensym)))
+                      `(let ((list ,(funcall old-val-fn (cadr name)))
+                             (,sym nil))
+                         (dolist (,i ,val)
+                           (if (member ,i list)
+                               nil
+                             (push ,i ,sym)))
+                         (append list (nreverse ,sym))))))
           ((eq (car-safe name) 'prepend)
            (funcall wrap-fn
                     (cadr name)
@@ -328,10 +340,30 @@ VAL into one s-expression."
                          (if (member ,sym list)
                              list
                            (cons ,sym list))))))
+          ((eq (car-safe name) 'prepend*)
+           (funcall wrap-fn
+                    (cadr name)
+                    (let ((sym (gensym))
+                          (i (gensym)))
+                      `(let ((list ,(funcall old-val-fn (cadr name)))
+                             (,sym nil))
+                         (dolist (,i ,val)
+                           (if (member ,i list)
+                               nil
+                             (push ,i ,sym)))
+                         (append (nreverse ,sym) list)))))
           ((eq (car-safe name) 'remove)
            (funcall wrap-fn
                     (cadr name)
                     `(remove ,val ,(funcall old-val-fn (cadr name)))))
+          ((eq (car-safe name) 'remove*)
+           (funcall wrap-fn
+                    (cadr name)
+                    (let ((i (gensym)))
+                      `(let ((list ,(funcall old-val-fn (cadr name))))
+                         (dolist (,i ,val)
+                           (setq list (remove ,i list)))
+                         list))))
           ((error "Invalid option %S" name)))))
 
 
@@ -542,6 +574,17 @@ supported:
 
 (remove VAR)    Assuming VAR designates a list, remove all instances
                 of VAL.
+
+(append* VAR)  Assuming VAR designates a list, add each element
+               of VAL to the end of VAR, keeping their order,
+               unless it is already a member of the list.
+
+(prepend* VAR) Assuming VAR designates a list, add each element
+               of VAL to the start of VAR, keeping their order,
+               unless it is already a member of the list.
+
+(remove* VAR)  Assuming VAR designates a list, remove all
+               instances of each element of VAL.
 
 Note that if the value of an option is modified partially by
 append, prepend, remove, one should ensure that the default value
