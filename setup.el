@@ -638,9 +638,13 @@ yourself."
 
 (setup-define :and
   (lambda (&rest conds)
-    `(if (and ,@(butlast conds))
-         ,@(last conds)
-       ,(setup-quit)))
+    (let ((tail (car (last conds))))
+      `(if (and ,@(butlast conds))
+           ,@(cond
+              ((symbolp tail) '(nil))
+              ((consp tail) (last conds))
+              ((error "Illegal tail")))
+         ,(setup-quit))))
   :documentation "Abort evaluation of CONDS are not all true.
 The expression of the last condition is used to deduce the
 feature context."
