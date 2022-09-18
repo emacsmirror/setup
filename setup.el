@@ -4,7 +4,7 @@
 
 ;; Author: Philip Kaludercic <philipk@posteo.net>
 ;; Maintainer: Philip Kaludercic <~pkal/public-inbox@lists.sr.ht>
-;; Version: 1.3.1
+;; Version: 1.3.2
 ;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: lisp, local
 ;; URL: https://git.sr.ht/~pkal/setup
@@ -37,10 +37,9 @@
 
 ;;; News:
 
-;;;; Version 1.3.1 (bug fix release)
+;;;; Version 1.3.2 (bug fix release)
 
-;; - Fix `:and' implementation.
-;; - Make `setup-bind' non-destructive
+;; - Fix `:and' once again.
 
 ;;; Code:
 
