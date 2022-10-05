@@ -66,7 +66,7 @@ Source code
 `setup` is developed on [SourceHut].
 
 [SourceHut]:
-	https://sr.ht/~pkal/setup
+	https://git.sr.ht/~pkal/setup
 
 Bugs and Patches
 ----------------
