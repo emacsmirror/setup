@@ -144,6 +144,32 @@ NAME may also be a macro, if it can provide a symbol."
 ;;;###autoload
 (put 'setup 'function-documentation '(setup--make-docstring))
 
+(defun setup--ensure (ensure-spec args)
+  "Ensure that ARGS matches the form of ENSURE-SPEC."
+  (dotimes (i (length args))
+    (let ((ensure (nth i ensure-spec))
+          (arg (nth i args)))
+      (cond
+       ((null ensure)) ;Do not modify argument
+       ((eq ensure 'kbd)
+        (setf (nth i args)
+              (cond
+               ((stringp arg) (kbd arg))
+               ((symbolp arg) `(kbd ,arg))
+               (arg))))
+       ((eq ensure 'func)
+        (setf (nth i args)
+              (cond
+               ((eq (car-safe arg) 'function)
+                arg)
+               ((eq (car-safe arg) 'quote)
+                `#',(cadr arg))
+               ((symbolp arg)
+                `#',arg)
+               (arg))))
+       ((error "Invalid ensure spec %S" ensure)))))
+  args)
+
 (defun setup-define (name fn &rest opts)
   "Define `setup'-local macro NAME using function FN.
 The plist OPTS may contain the key-value pairs:
@@ -203,7 +229,8 @@ functions `func'.  Any other value is invalid."
         (let* ((arity (if (eq (plist-get opts :repeatable) t)
                           (car (func-arity fn))
                         (plist-get opts :repeatable)))
-               (fn (if (null arity) fn
+               (fn (if (null arity)
+                       fn
                      (lambda (&rest args)
                        (unless (zerop (mod (length args) arity))
                          (error "Illegal arguments"))
@@ -213,28 +240,7 @@ functions `func'.  Any other value is invalid."
                              (setf (nthcdr arity args) nil)
                              (let ((ensure-spec (plist-get opts :ensure)))
                                (when ensure-spec
-                                 (dotimes (i (length args))
-                                   (let ((ensure (nth i ensure-spec))
-                                         (arg (nth i args)))
-                                     (cond
-                                      ((null ensure)) ;Do not modify argument
-                                      ((eq ensure 'kbd)
-                                       (setf (nth i args)
-                                             (cond
-                                              ((stringp arg) (kbd arg))
-                                              ((symbolp arg) `(kbd ,arg))
-                                              (arg))))
-                                      ((eq ensure 'func)
-                                       (setf (nth i args)
-                                             (cond
-                                              ((eq (car-safe arg) 'function)
-                                               arg)
-                                              ((eq (car-safe arg) 'quote)
-                                               `#',(cadr arg))
-                                              ((symbolp arg)
-                                               `#',arg)
-                                              (arg))))
-                                      ((error "Invalid ensure spec %S" ensure)))))))
+                                 (setq args (setup--ensure ensure-spec args))))
                              (push (apply fn args) aggr)
                              (setq args rest)))
                          (macroexp-progn (nreverse aggr)))))))
