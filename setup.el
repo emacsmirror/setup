@@ -218,6 +218,10 @@ Wrap the macro in a `with-eval-after-load' body.
   :repeatable ARITY
 Allow macro to be automatically repeated.  If ARITY is t, use
 `func-arity' to determine the minimal number of arguments.
+If ARITY is a dotted pair, then the car of ARITY is the number
+of shared arguments in the repeated function calls and the
+cdr is the number of arguments that make of the remainder
+of the function call.  The cdr may also be t, as above.
 
   :signature SIG
 Give an advertised calling convention.
@@ -263,21 +267,46 @@ invalid."
   (put name 'lisp-indent-function (plist-get opts :indent))
   ;; define macro for `macroexpand-all'
   (setf (alist-get name setup-macros)   ;New in Emacs-25.
-        (let* ((arity (if (eq (plist-get opts :repeatable) t)
-                          (car (func-arity fn))
-                        (plist-get opts :repeatable)))
-               (fn (if (null arity)
+        (let* ((possible-num-repeated (if (eq (plist-get opts :repeatable) t)
+                                          (car (func-arity fn))
+                                        (plist-get opts :repeatable)))
+               (fn (if (null possible-num-repeated)
                        fn
                      (lambda (&rest args)
-                       (unless (zerop (mod (length args) arity))
-                         (error "Illegal arguments"))
-                       (let (aggr)
+                       (let ((aggr)
+                             (using-shared-args (consp possible-num-repeated))
+                             (num-shared)
+                             (shared-args)
+                             (num-repeated))
+
+                         (if using-shared-args
+                             (progn
+                               (setq num-shared (car possible-num-repeated)
+                                     num-repeated (if (eq (cdr possible-num-repeated) t)
+                                                      (- (car (func-arity fn))
+                                                         num-shared)
+                                                    (cdr possible-num-repeated))
+                                     shared-args args
+                                     args (nthcdr num-shared args))
+                               (setf (nthcdr num-shared shared-args) nil))
+                           (setq num-repeated possible-num-repeated))
+
+                         (unless (zerop (mod (length args) num-repeated))
+                           (error "Illegal arguments"))
+
                          (while args
-                           (let ((rest (nthcdr arity args)))
-                             (setf (nthcdr arity args) nil)
+                           (let ((rest (nthcdr num-repeated args)))
+                             (setf (nthcdr num-repeated args) nil)
                              (let ((ensure-spec (plist-get opts :ensure)))
-                               (when ensure-spec
-                                 (setq args (setup--ensure ensure-spec args t))))
+                               (cond
+                                ((and using-shared-args ensure-spec)
+                                 (setq args (setup--ensure
+                                             ensure-spec
+                                             (append shared-args args) t)))
+                                (using-shared-args
+                                 (setq args (append shared-args args)))
+                                (ensure-spec
+                                 (setq args (setup--ensure ensure-spec args t)))))
                              (push (apply fn args) aggr)
                              (setq args rest)))
                          (macroexp-progn (nreverse aggr)))))))
