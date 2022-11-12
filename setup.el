@@ -601,6 +601,7 @@ The first FEATURE can be used to deduce the feature context."
   :documentation "Bind into keys into the map of FEATURE-OR-MAP.
 The arguments REST are handled as by `:bind'."
   :debug '(sexp &rest form sexp)
+  :ensure '(nil &rest kbd func)
   :indent 1)
 
 (setup-define :hook
@@ -697,7 +698,7 @@ supported:
   :documentation "Add FUNCTION to HOOK only in buffers of the current mode."
   :debug '(symbolp sexp)
   :ensure '(nil func)
-  :repeatable t)
+  :repeatable '(1 . 1))
 
 (setup-define :also-load
   (lambda (feature)
