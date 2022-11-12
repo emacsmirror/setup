@@ -144,31 +144,66 @@ NAME may also be a macro, if it can provide a symbol."
 ;;;###autoload
 (put 'setup 'function-documentation '(setup--make-docstring))
 
-(defun setup--ensure (ensure-spec args)
-  "Ensure that ARGS matches the form of ENSURE-SPEC."
-  (dotimes (i (length args))
-    (let ((ensure (nth i ensure-spec))
-          (arg (nth i args)))
-      (cond
-       ((null ensure)) ;Do not modify argument
-       ((eq ensure 'kbd)
-        (setf (nth i args)
-              (cond
-               ((stringp arg) (kbd arg))
-               ((symbolp arg) `(kbd ,arg))
-               (arg))))
-       ((eq ensure 'func)
-        (setf (nth i args)
-              (cond
-               ((eq (car-safe arg) 'function)
-                arg)
-               ((eq (car-safe arg) 'quote)
-                `#',(cadr arg))
-               ((symbolp arg)
-                `#',arg)
-               (arg))))
-       ((error "Invalid ensure spec %S" ensure)))))
-  args)
+(defun setup--ensure (ensure-spec args &optional check-len)
+  "Ensure that ARGS matches the form of ENSURE-SPEC.
+
+The symbol `kbd' means to apply the function `kbd' to the
+argument.  The symbol `func' means to sharp-quote the argument.
+The symbol `&rest' means that the remaining elements of
+ENSURE-SPEC are applied repeatedly to the remaining elements of
+ARGS.
+
+When CHECK-LEN is non-nil, check that the lengths
+of ENSURE-SPEC and ARGS are compatible."
+  (when check-len
+    (let ((check ensure-spec)
+          (found nil)
+          (count 0))
+      (while check
+        (if (eq (car check) '&rest)
+            (if (zerop (mod (- (length args) count)
+                            (length (cdr check))))
+                (setq found t
+                      check nil)
+              (error "Bad `:ensure' spec or argument list"))
+          (setq check (cdr check)
+                count (1+ count))))
+      (unless (or found (= (length args) count))
+        (error "Bad `:ensure' spec or argument list"))))
+
+  (let ((result))
+    (while args
+      (let ((ensure (pop ensure-spec)))
+        (if (eq ensure '&rest)
+            (let* ((rest-spec ensure-spec)
+                   (rest-spec-len (length rest-spec)))
+              ;; Consume remaining `args'
+              (while args
+                (dolist (ensured
+                         (setup--ensure rest-spec
+                                        (let ((to-be-ensured))
+                                          (dotimes (_ rest-spec-len)
+                                            (push (pop args) to-be-ensured))
+                                          (nreverse to-be-ensured))
+                                        nil))
+                  (push ensured result))))
+          (let ((arg (pop args)))
+            (push (cond ((null ensure) arg) ;Do not modify argument
+                        ((eq ensure 'kbd) (cond
+                                           ((stringp arg) (kbd arg))
+                                           ((symbolp arg) `(kbd ,arg))
+                                           (arg)))
+                        ((eq ensure 'func) (cond
+                                            ((eq (car-safe arg) 'function)
+                                             arg)
+                                            ((eq (car-safe arg) 'quote)
+                                             `#',(cadr arg))
+                                            ((symbolp arg)
+                                             `#',arg)
+                                            (arg)))
+                        ((error "Invalid ensure spec %S" ensure)))
+                  result)))))
+    (nreverse result)))
 
 (defun setup-define (name fn &rest opts)
   "Define `setup'-local macro NAME using function FN.
@@ -205,7 +240,9 @@ If not given, it is assumed nothing is evaluated.
 A list of symbols indicating what kind of argument each parameter
 to FN is.  If the nth parameter is not to be reinterpreted, the
 nth symbol in SPEC should nil.  For key bindings `kbd' and for
-functions `func'.  Any other value is invalid."
+functions `func'.  `&rest' means that the remaining symbols apply
+to the remaining arguments repeatedly.  Any other value is
+invalid."
   (declare (indent 1))
   ;; NB.: NAME is not required to by a keyword, even though all macros
   ;;      specified on the next page use keywords.  The rationale for
@@ -240,7 +277,7 @@ functions `func'.  Any other value is invalid."
                              (setf (nthcdr arity args) nil)
                              (let ((ensure-spec (plist-get opts :ensure)))
                                (when ensure-spec
-                                 (setq args (setup--ensure ensure-spec args))))
+                                 (setq args (setup--ensure ensure-spec args t))))
                              (push (apply fn args) aggr)
                              (setq args rest)))
                          (macroexp-progn (nreverse aggr)))))))
