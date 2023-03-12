@@ -686,7 +686,18 @@ supported:
                 list.
 
 (remove VAR)    Assuming VAR designates a list, remove all instances
-                of VAL."
+                of VAL.
+
+(append* VAR)   Assuming VAR designates a list, add each element
+                of VAL to the end of VAR, keeping their order,
+                unless it is already a member of the list.
+
+(prepend* VAR)  Assuming VAR designates a list, add each element
+                of VAL to the start of VAR, keeping their order,
+                unless it is already a member of the list.
+
+(remove* VAR)   Assuming VAR designates a list, remove all
+                instances of each element of VAL."
   :debug '(sexp form)
   :repeatable t)
 
