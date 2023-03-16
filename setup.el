@@ -43,8 +43,6 @@
 
 ;;; Code:
 
-(require 'elisp-mode)
-
 (defvar setup-opts `((quit . ,(make-symbol "setup-quit")))
   "Alist defining the context for local macros.
 Context-modifying macros (`:with-feature', `:with-mode', ...)
@@ -328,6 +326,7 @@ invalid."
 
 (defun setup--xref-def-function (symbol)
   "Return an elisp xref location for SYMBOL."
+  (require 'elisp-mode)
   (and (assq symbol setup-macros)
        (let ((file (get symbol 'setup-definition-file)))
          (list (elisp--xref-make-xref nil symbol file)))))
