@@ -620,6 +620,13 @@ The arguments REST are handled as by `:bind'."
   :documentation "Add current function to HOOK."
   :repeatable t)
 
+(setup-define :bind-to
+  (lambda (binding)
+    `(global-set-key ,binding #',(setup-get 'func) ))
+  :documentation "Bind current function to HOOK."
+  :ensure '(kbd)
+  :repeatable t)
+
 (setup-define :option
   (setup-make-setter
    (lambda (name)
