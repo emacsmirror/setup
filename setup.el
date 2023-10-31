@@ -24,7 +24,7 @@
 
 ;;; Commentary:
 
-;; The `setup` macro simplifies repetitive configuration patterns, by
+;; The `setup' macro simplifies repetitive configuration patterns, by
 ;; providing context-sensitive local macros in `setup' bodies.  These
 ;; macros can be mixed with regular elisp code without any issues,
 ;; allowing for flexible and terse configurations.  The list of local
