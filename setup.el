@@ -1,6 +1,6 @@
 ;;; setup.el --- Helpful Configuration Macro    -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021, 2022, 2023  Free Software Foundation, Inc.
+;; Copyright (C) 2021, 2022, 2023, 2024  Free Software Foundation, Inc.
 
 ;; Author: Philip Kaludercic <philipk@posteo.net>
 ;; Maintainer: Philip Kaludercic <~pkal/public-inbox@lists.sr.ht>
@@ -544,6 +544,11 @@ If FUNCTION is a list, apply BODY to all elements of FUNCTION."
 The first PACKAGE can be used to deduce the feature context."
   :repeatable t
   :shorthand #'cadr)
+
+(setup-define :autoload-this
+  (lambda (&rest args)
+    `(autoload ',(setup-get 'func) ,(format "%s" (setup-get 'feature)) ,@args))
+  :documentation "Explicitly mark the context function to be autoloaded.")
 
 (setup-define :require
   (lambda (feature)
