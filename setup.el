@@ -537,7 +537,7 @@ If FUNCTION is a list, apply BODY to all elements of FUNCTION."
 (setup-define :package
   (lambda (package)
     `(unless (package-installed-p ',package)
-       (unless (memq ',package package-archive-contents)
+       (unless (assq ',package package-archive-contents)
          (package-refresh-contents))
        (package-install ',package)))
   :documentation "Install PACKAGE if it hasn't been installed yet.
