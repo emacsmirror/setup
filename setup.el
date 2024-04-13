@@ -598,11 +598,15 @@ The first FEATURE can be used to deduce the feature context."
   :repeatable t)
 
 (setup-define :bind-into
-  (lambda (feature-or-map &rest rest)
-    (if (string-match-p "-map\\'" (symbol-name feature-or-map))
-        `(:with-map ,feature-or-map (:bind ,@rest))
-      `(:with-feature ,feature-or-map (:bind ,@rest))))
-  :documentation "Bind into keys into the map of FEATURE-OR-MAP.
+  (lambda (feature &rest rest)
+    (if (string-match-p "-map\\'" (symbol-name feature))
+        (progn
+          ;; https://lists.sr.ht/~pkal/public-inbox/%3C87pluzt28q.fsf@ushin.org%3E
+          ;; https://lists.sr.ht/~pkal/public-inbox/%3C87edbdma8j.fsf@ushin.org%3E
+          (warn "The `:bind-into' with a map %S is considered unreliable, and will be deprecated." feature)
+          `(:with-map ,feature (:bind ,@rest)))
+      `(:with-feature ,feature (:bind ,@rest))))
+  :documentation "Bind into keys into the map of FEATURE.
 The arguments REST are handled as by `:bind'."
   :debug '(sexp &rest form sexp)
   :ensure '(nil &rest kbd func)
