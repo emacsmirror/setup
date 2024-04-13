@@ -4,7 +4,7 @@
 
 ;; Author: Philip Kaludercic <philipk@posteo.net>
 ;; Maintainer: Philip Kaludercic <~pkal/public-inbox@lists.sr.ht>
-;; Version: 1.3.2
+;; Version: 1.4.0
 ;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: lisp, local
 ;; URL: https://git.sr.ht/~pkal/setup
@@ -37,9 +37,28 @@
 
 ;;; News:
 
-;;;; Version 1.3.2 (bug fix release)
+;;;; Version 1.4.0 (13Apr24)
 
-;; - Fix `:and' once again.
+;; - New :bind-to macro, that takes a key chord and binds the
+;;   context-relevant function.  E.g.
+;;
+;;   (setup (:package do-at-point)
+;;     (:bind-to "C-'"))
+;;
+;; - New :autoload-this creates an auto-load cookie for the
+;;   context-relevant function by connecting it to the
+;;   context-relevant feature.
+;;
+;; - Avoid calling `package-refresh-contents' in :package if it is not
+;;   necessary.  The check here was broken, as Ralf Schmitt noticed.
+;;
+;; - Earl Hyatt improved the :repeatable keyword to support a prefix
+;;   of non-repeating arguments.
+;;
+;; - Passing a map to :bind-into has been deprecated, since there is
+;;   no reliable way to deduce the feature that holds the map.  I
+;;   apologise for the inconvenience.  The functionality will remain
+;;   for a while, but I would advise rewriting affected configuration.
 
 ;;; Code:
 
