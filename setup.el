@@ -555,14 +555,27 @@ If FUNCTION is a list, apply BODY to all elements of FUNCTION."
 
 (setup-define :package
   (lambda (package)
-    `(unless (package-installed-p ',package)
-       (unless (assq ',package package-archive-contents)
-         (package-refresh-contents))
-       (package-install ',package)))
+    (let ((name (if (consp package)
+                    (progn
+                      (unless (fboundp 'package-vc-install)
+                        (error "Package-vc is not available"))
+                      (car package))
+                  package)))
+      `(unless (package-installed-p ',name)
+         (unless (assq ',package package-archive-contents)
+           (package-refresh-contents))
+         ,(cond
+           ((and (consp package) (consp (cdr package)))
+            `(package-vc-install ',package))
+           ((consp package) `(package-vc-install ',(car package)))
+           (t `(package-install ',package))))))
   :documentation "Install PACKAGE if it hasn't been installed yet.
-The first PACKAGE can be used to deduce the feature context."
+The first PACKAGE can be used to deduce the feature context.  If PACKAGE
+is a cons-cell (NAME . SPEC), then the NAME is installed using
+`package-vc-install' using the specification SPEC.  If SPEC is nil, then
+default to the package specification provided by ELPA."
   :repeatable t
-  :shorthand #'cadr)
+  :shorthand (lambda (package) (or (car-safe (cadr package)) (cadr package))))
 
 (setup-define :autoload-this
   (lambda (&rest args)
