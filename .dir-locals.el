@@ -3,4 +3,5 @@
 
 ((emacs-lisp-mode
   (indent-tabs-mode . nil)
-  (byte-compile-error-on-warn . t)))
+  (show-trailing-whitespace . t)
+  (sentence-end-double-space . t)))
