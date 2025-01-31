@@ -1,13 +1,13 @@
 ;;; setup.el --- Helpful Configuration Macro    -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021, 2022, 2023, 2024  Free Software Foundation, Inc.
+;; Copyright (C) 2021, 2022, 2023, 2024, 2025  Free Software Foundation, Inc.
 
 ;; Author: Philip Kaludercic <philipk@posteo.net>
-;; Maintainer: Philip Kaludercic <~pkal/public-inbox@lists.sr.ht>
+;; Maintainer: Philip Kaludercic <philipk@posteo.net>
 ;; Version: 1.4.0
 ;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: lisp, local
-;; URL: https://git.sr.ht/~pkal/setup
+;; URL: https://codeberg.org/pkal/setup.el
 
 ;; This package is Free Software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by

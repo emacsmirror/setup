@@ -63,19 +63,21 @@ custom, context-insensitive macro is not worthwhile adding to
 Source code
 -----------
 
-`setup` is developed on [SourceHut].
+`setup` is developed on [Codeberg].
 
-[SourceHut]:
-	https://git.sr.ht/~pkal/setup
+[Codeberg]:
+	https://codeberg.org/pkal/setup.el
 
 Bugs and Patches
 ----------------
 
-Bugs, patches, comments or questions can be submitted to my [public
-inbox].
+Bugs, patches, comments or questions can be submitted via [Codeberg's
+issue system] or my sending [me] an email.
 
-[public inbox]:
-	https://lists.sr.ht/~pkal/public-inbox
+[Codeberg's issue system]:
+	https://codeberg.org/pkal/setup.el/issues
+[me]:
+	https://amodernist.com/#email
 
 Distribution
 ------------
