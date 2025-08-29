@@ -37,12 +37,10 @@
 
 ;;; News:
 
-;;;; Version 1.5.0 (29Aug25)
+;;;; Version 1.6.0 (???)
 
-;; - Add support for `package-vc' in `:package' macro.  Instead of a
-;;   symbol, a cons-cell can be used to specify a package specification.
-;;
-;; - Update URL to point to new Codeberg repository.
+;; - Deprecate `:global', `:option' and `:file-match'.  Please replace
+;;   these, as they are marked for removal at some point.
 
 ;;; Code:
 
@@ -577,6 +575,9 @@ The first FEATURE can be used to deduce the feature context."
 
 (setup-define :global
   (lambda (key command)
+    ;; This command doesn't use or set any context, and thus has no
+    ;; need to be a `setup' macro.
+    (warn "The `:global' macro for setup has been deprecated, please use `keymap-global-set'.")
     `(global-set-key ,key ,command))
   :documentation "Globally bind KEY to COMMAND."
   :debug '(form sexp)
@@ -655,6 +656,10 @@ The arguments REST are handled as by `:bind'."
 (setup-define :option
   (setup-make-setter
    (lambda (name)
+     ;; This command doesn't use or set any context, and thus has no
+     ;; need to be a `setup' macro.  Features like `append'
+     ;; et. al. are in my opinion too hacky to legitimise the macro.
+     (warn "The `:option' macro for setup has been deprecated, please use `setopt'.")
      `(funcall (or (get ',name 'custom-get)
                    #'symbol-value)
                ',name))
@@ -777,7 +782,19 @@ The first FEATURE can be used to deduce the feature context."
 
 (setup-define :file-match
   (lambda (pat)
+    ;; While on the one hand this kind of a feature is not that
+    ;; useful, as most packages modify `auto-mode-alist' on their own,
+    ;; as we are dealing with file names it is more convenient to use
+    ;; globing syntax instead of regexps.
+    (warn "The `:file-match' macro for setup has been deprecated, please use `:match-file' instead.")
     `(add-to-list 'auto-mode-alist (cons ,pat ',(setup-get 'mode))))
+  :documentation "Associate the current mode with files that match PAT."
+  :debug '(form)
+  :repeatable t)
+
+(setup-define :match-file
+  (lambda (pat)
+    `(add-to-list 'auto-mode-alist (cons ,(wildcard-to-regexp pat) ',(setup-get 'mode))))
   :documentation "Associate the current mode with files that match PAT."
   :debug '(form)
   :repeatable t)
